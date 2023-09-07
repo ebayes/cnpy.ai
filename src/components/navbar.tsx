@@ -6,6 +6,8 @@ import {
 } from "@visheratin/web-ai/multimodal";
 import { SessionParams } from "@visheratin/web-ai";
 import React, { useEffect, useRef, useState } from "react";
+import { Select, ActionIcon } from '@mantine/core';
+import { IconX } from '@tabler/icons-react';
 
 interface NavbarComponentProps {
   onInputChange: (inputs: string[]) => void;
@@ -36,13 +38,15 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
   });
 
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('CLIP');
+
 
   const setProgressValue = (percentage: number) => {
     progressRef.current!.style.width = `${percentage}%`;
   };
 
-  const loadModel = async () => {
-    const power = parseFloat(powerRef.current!.value);
+  const loadCLIP = async () => {
+    const power = 4;
     SessionParams.numThreads = power;
     setStatus({ ...status, busy: true, message: "Initializing AI..." });
     const modelResult = await MultimodalModel.create("clip-base-quant");
@@ -55,8 +59,13 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
     }, 2000);
   };
 
+  const loadOther = () => {
+    // Load alt model
+  };
+  
+
   const process = () => {
-    const power = parseFloat(powerRef.current!.value);
+    const power = 4;
     props.process(power, setStatus);
   };
 
@@ -72,46 +81,51 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
           style={modelLoaded ? { display: "none" } : {}}
         >
           <div>
-            <h4 className="text-xl">AI setup</h4>
+            <h4 className="text-xl">Model</h4>
           </div>
-          <div className="w-full">
-            <label className="mr-2 text-gray-700">
-              <span>Select power</span>
-            </label>
-            <Tooltip tooltipContent="How many CPU cores to use for processing" />
-            <input
-              type="range"
-              id="power"
-              ref={powerRef}
-              name="power"
-              min="1"
-              max="4"
-              defaultValue="1"
-              step="1"
-              className="slider w-full"
-              title="How many CPU cores to use for processing"
-              disabled={status.busy}
-            />
-            <div className="flex justify-between text-xs mt-1">
-              <span className="text-gray-600">1</span>
-              <span className="text-gray-600">4</span>
-            </div>
-          </div>
-          <button
-            disabled={status.busy}
-            onClick={() => loadModel()}
-            className="bg-blue-600 text-white w-full py-2 px-4 rounded hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
-          >
-            Initialize
-          </button>
+          <Select
+            placeholder="Choose model"
+            defaultValue="CLIP"
+            data={[
+              { value: 'CLIP', label: 'CLIP' },
+              { value: 'Other', label: 'Other' },
+            ]}
+            onChange={(value) => setSelectedModel(value)}
+          />
+
+          
+        <button
+          disabled={status.busy}
+          onClick={() => {
+            if (selectedModel === 'CLIP') {
+              loadCLIP();
+            } else if (selectedModel === 'Other') {
+              loadOther();
+            }
+          }}
+          className="bg-blue-600 text-white w-full py-2 px-4 rounded hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+        >
+          Initialize
+        </button>
+
         </div>
         <div
           className="grid grid-cols-1 gap-4"
           style={modelLoaded ? {} : { display: "none" }}
         >
-          <div>
-            <h4 className="text-xl">Set photo classes</h4>
-          </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h4 className="text-xl">Set classes</h4>
+          <ActionIcon 
+            variant="transparent"
+            disabled={status.busy}
+            onClick={() => setModelLoaded(false)}
+            style={!modelLoaded ? { display: "none" } : {}}
+          >
+            <IconX size="1rem" />
+          </ActionIcon>
+        </div>
+
+
           <InputFieldsComponent
             onInputChange={props.onInputChange}
             busy={status.busy}

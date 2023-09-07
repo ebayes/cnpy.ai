@@ -398,11 +398,8 @@ export default function Home() {
     <>
       <header className="text-center py-6 bg-blue-600 moving-gradient">
         <h1 className="text-4xl font-semibold">AI photo organizer</h1>
-        <h5 className="text-xl text-white-600 mt-2">
-          Organize your photos using the power of neural networks
-        </h5>
       </header>
-      <IntroComponent />
+     
       <div className="flex flex-col lg:flex-row flex-grow min-h-screen">
         <NavbarComponent
           onInputChange={setClassNames}
