@@ -397,7 +397,7 @@ export default function Home() {
   return (
     <>
       <header className="text-center py-6 bg-blue-600 moving-gradient">
-        <h1 className="text-4xl font-semibold">AI photo organizer</h1>
+        <h1 className="text-4xl font-semibold">Canopy</h1>
       </header>
      
       <div className="flex flex-col lg:flex-row flex-grow min-h-screen">
