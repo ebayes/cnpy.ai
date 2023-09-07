@@ -38,6 +38,7 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
   });
 
   const [modelLoaded, setModelLoaded] = useState(false);
+  const [otherLoaded, setOtherLoaded] = useState(false);
   const [selectedModel, setSelectedModel] = useState('CLIP');
 
 
@@ -60,7 +61,15 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
   };
 
   const loadOther = () => {
-    // Load alt model
+    setStatus({ ...status, busy: true, message: "Initializing AI..." });
+    {/* const modelResult = await MultimodalModel.create("clip-base-quant"); */}
+    console.log(`Model loading time: ${modelResult.elapsed}s`);
+    {/* props.modelCallback(modelResult.model as ZeroShotClassificationModel); */}
+    setOtherLoaded(true);
+    setStatus({ ...status, busy: false, message: "AI was initialized!" });
+    setTimeout(() => {
+      setStatus({ ...status, message: "Ready" });
+    }, 2000);
   };
   
 
@@ -109,6 +118,7 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
         </button>
 
         </div>
+
         <div
           className="grid grid-cols-1 gap-4"
           style={modelLoaded ? {} : { display: "none" }}
@@ -125,13 +135,13 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
           </ActionIcon>
         </div>
 
-
           <InputFieldsComponent
             onInputChange={props.onInputChange}
             busy={status.busy}
             modelLoaded={modelLoaded}
           />
         </div>
+        
         <button
           disabled={status.busy || !modelLoaded}
           hidden={!modelLoaded || props.classNum === 0 || status.busy}
