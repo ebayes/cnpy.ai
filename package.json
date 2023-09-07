@@ -1,0 +1,38 @@
+{
+  "name": "photo-sorter",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build && sh ./fix-ort.sh",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@ducanh2912/next-pwa": "^9.3.0",
+    "@types/node": "18.15.5",
+    "@types/react": "18.0.28",
+    "@types/react-dom": "18.0.11",
+    "@vercel/analytics": "^0.1.11",
+    "@visheratin/tokenizers": "^0.1.5",
+    "@visheratin/web-ai": "^1.2.3",
+    "eslint": "8.36.0",
+    "eslint-config-next": "13.2.4",
+    "jimp": "^0.16.2",
+    "md5": "^2.3.0",
+    "next": "13.2.4",
+    "onnxruntime-web": "^1.15.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-dropzone": "^14.2.3",
+    "react-image-file-resizer": "^0.4.8",
+    "typescript": "5.0.2"
+  },
+  "devDependencies": {
+    "@types/md5": "^2.3.2",
+    "autoprefixer": "^10.4.14",
+    "node-polyfill-webpack-plugin": "^2.0.1",
+    "postcss": "^8.4.21",
+    "tailwindcss": "^3.2.7"
+  }
+}
