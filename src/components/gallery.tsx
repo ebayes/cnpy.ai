@@ -1,3 +1,5 @@
+// gallery.tsx
+
 /* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
 import { FileInfo } from "./fileInfo";
@@ -12,6 +14,13 @@ interface PhotoGalleryProps {
 }
 
 const PhotoGallery = (props: PhotoGalleryProps) => {
+  
+  const allImages = [...props.images];
+
+  props.duplicates.forEach((dupe) => {
+    allImages.push(...dupe.files);
+  });
+
   const [selectedImage, setSelectedImage] = useState<FileInfo | undefined>(
     undefined
   );
@@ -24,10 +33,12 @@ const PhotoGallery = (props: PhotoGalleryProps) => {
     setSelectedImage(undefined);
   };
 
+  
+
   return (
     <div>
       <div className="grid grid-cols-2 2xl:grid-cols-10 md:grid-cols-5 gap-4">
-        {props.images.map((image, index) => (
+        {allImages.map((image) => (
           <GalleryItem
             image={image}
             key={image.src}
@@ -37,23 +48,6 @@ const PhotoGallery = (props: PhotoGalleryProps) => {
           />
         ))}
       </div>
-
-      {props.duplicates.map((info, index) => (
-        <div className="my-2" key={info.name}>
-          <h4 className="mb-2 text-lg font-semibold">Possible duplicates</h4>
-          <div className="grid grid-cols-2 2xl:grid-cols-10 md:grid-cols-5 gap-4">
-            {info.files.map((image, index) => (
-              <GalleryItem
-                image={image}
-                key={image.src}
-                openImage={openImage}
-                markDeleted={props.markDeleted}
-                moveToClass={props.moveToClass}
-              />
-            ))}
-          </div>
-        </div>
-      ))}
 
       {selectedImage && (
         <div

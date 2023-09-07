@@ -14,16 +14,14 @@ import {
 import { ClassificationPrediction } from "@visheratin/web-ai/image";
 import FileLoader from "@/components/fileLoader";
 import CodeSnippetModal from "@/components/codeSnippet";
-import IntroComponent from "@/components/intro";
 import FooterComponent from "@/components/footer";
 import ClassSelector from "@/components/classSelector";
-import { Select, ActionIcon, Drawer, Text, Loader } from '@mantine/core';
+import { Select, ActionIcon, Drawer, Text, Loader, Button, Tooltip } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import InputFieldsComponent from "@/components/classes";
-import Tooltip from "@/components/tooltip";
 import { SegmentationModel, ModelType } from "@visheratin/web-ai/image"
 import { SessionParams } from "@visheratin/web-ai";
-import { IconLayoutSidebarRightExpandFilled, IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconX } from '@tabler/icons-react';
+import { IconBrain, IconLayoutSidebarRightExpandFilled, IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconUpload, IconX } from '@tabler/icons-react';
 
 interface NavbarComponentProps {
   onInputChange: (inputs: string[]) => void;
@@ -439,9 +437,11 @@ const [classNum, setClassNum] = useState<number>(0);
   const [otherLoaded, setOtherLoaded] = useState(false);
   const [selectedModel, setSelectedModel] = useState('CLIP');
 
-  const setProgressValue = (percentage: number) => {
-    progressRef.current!.style.width = `${percentage}%`;
-  };
+const setProgressValue = (percentage: number) => {
+  if (progressRef.current) {
+    progressRef.current.style.width = `${percentage}%`;  
+  }
+};
 
   const loadCLIP = async () => {
     const power = 4;
@@ -474,14 +474,7 @@ const [classNum, setClassNum] = useState<number>(0);
 
   return (
     <>
-      <Drawer 
-        opened={opened} 
-        onClose={close} 
-        title="Model"
-        position="right"
-      >
-        <Text>Test</Text>
-      </Drawer>
+
       <header id="header" className="px-5 py-2.5 border-b border-gray-300 bg-gray-200">
         <img src="/icons/logo.png" alt="Logo" width="100"/>
     </header>
@@ -490,13 +483,14 @@ const [classNum, setClassNum] = useState<number>(0);
       className="px-5 py-2.5 border-b border-gray-300 flex justify-between"
     >
       <div id="leftbuttons">
-        <ActionIcon>
-        <IconPower size="1rem"/>
-        </ActionIcon>
+        
+
+      <FileLoader setNewFiles={setNewFiles} />
+
       </div>
     <div
     id="mainbuttons"
-    className="flex space-between gap-4"
+    className="flex space-between gap-3"
   >
     <Select
             placeholder="Choose model"
@@ -509,7 +503,27 @@ const [classNum, setClassNum] = useState<number>(0);
           />
 
           
+        <Tooltip
+          label="Model settings"
+          color="dark"
+          withArrow
+          arrowPosition="center"
+        >
+        <ActionIcon
+          onClick={open}
+          className="bg-pink-400 text-white hover:bg-pink-600  flex items-center justify-center"
+        >
+          <IconBrain size="1rem"/>
+        </ActionIcon>
+        </Tooltip>
         <div style={modelLoaded ? { display: "none" } : {}}>
+          
+        <Tooltip
+          label="Load model"
+          color="dark"
+          withArrow
+          arrowPosition="center"
+        >
         <ActionIcon
           id="poweron"
           // disabled={status.busy}
@@ -524,8 +538,15 @@ const [classNum, setClassNum] = useState<number>(0);
         >
           {status.busy ? <Loader color="white" size="1rem" /> : <IconPower size="1rem"/>}
         </ActionIcon>
+        </Tooltip>
         </div>
         <div style={!modelLoaded ? { display: "none" } : {}}>
+        <Tooltip
+          label="Unload model"
+          color="dark"
+          withArrow
+          arrowPosition="center"
+        >
         <ActionIcon
           id="poweroff"
           disabled={status.busy}
@@ -534,12 +555,20 @@ const [classNum, setClassNum] = useState<number>(0);
         >
           <IconPower size="1rem"/>
         </ActionIcon>
+        </Tooltip>
         </div>
+        
 
 
 
         
         <div style={status.busy ? { display: "none" } : {}}>
+        <Tooltip
+          label="Run model"
+          color="dark"
+          withArrow
+          arrowPosition="center"
+        >
         <ActionIcon
           disabled={!modelLoaded || classNum === 0}
           onClick={() => process()}
@@ -547,6 +576,7 @@ const [classNum, setClassNum] = useState<number>(0);
         >
           <IconPlayerPlay size="1rem"/>
         </ActionIcon>
+        </Tooltip>
         </div>
 
         <div style={!modelLoaded || classNum === 0 || !status.busy ? { display: "none" } : {}}>
@@ -563,6 +593,12 @@ const [classNum, setClassNum] = useState<number>(0);
         </div>
 
 
+        <Tooltip
+          label="Terminal commands"
+          color="dark"
+          withArrow
+          arrowPosition="center"
+        >
         <ActionIcon 
           disabled={status.busy || !modelLoaded || classNum === 0 || status.progress !== 100}
           onClick={() => generateScript()}
@@ -570,11 +606,8 @@ const [classNum, setClassNum] = useState<number>(0);
         >
           <IconTerminal2 size="1rem"/>
         </ActionIcon >
-        <ActionIcon
-          onClick={open}
-        >
-          <IconLayoutSidebarRightExpandFilled size="1rem"/>
-        </ActionIcon>
+        </Tooltip>
+
 
     </div>
     </header>
@@ -582,18 +615,24 @@ const [classNum, setClassNum] = useState<number>(0);
      
       <div className="flex flex-col lg:flex-row flex-grow min-h-screen">
 <nav className="bg-white p-6 lg:w-80 lg:h-screen">
-      <div id="mainbuttons" className="grid grid-cols-1 gap-4">
+      
+      
+     
 
-          
-        <div
-          className="grid grid-cols-1 gap-4"
-          
-        >
+      <Drawer 
+        opened={opened} 
+        onClose={close} 
+        title="Model"
+        position="right"
+      >
+         
+      </Drawer>
+
+      <div id="modelsettings" className="grid grid-cols-1 gap-4">  
+        <div className="grid grid-cols-1 gap-4">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <h4 className="text-xl">Set classes</h4>
-
         </div>
-
           <InputFieldsComponent
             onInputChange={onInputChange}
             busy={status.busy}
@@ -617,22 +656,18 @@ const [classNum, setClassNum] = useState<number>(0);
           <div className="flex-grow border-t border-gray-400"></div>
         </div>
       </div>
+
     </nav>
         <div className="border-l border-gray-300 h-auto my-2"></div>
         <main className="flex-grow p-6 lg:w-80 lg:h-full">
-          <section>
-            <FileLoader setNewFiles={setNewFiles} />
-          </section>
-          <div className="relative flex py-5 items-center">
-            <div className="flex-grow border-t border-gray-400"></div>
-          </div>
+
           {classFiles.length > 0 &&
             classFiles.map(
               (item) =>
                 (item.files.length > 0 || item.duplicates.length > 0) && (
                   <section
                     key={item.name}
-                    className="rounded-md border border-blue-400 p-4 my-4"
+                    
                   >
                     <h3 className="mb-4 text-xl font-semibold">{item.name}</h3>
                     <PhotoGallery
@@ -645,7 +680,7 @@ const [classNum, setClassNum] = useState<number>(0);
                 )
             )}
           {unsortedFiles.length > 0 && (
-            <section className="rounded-md border border-blue-400 p-4">
+            <section >
               <h3 className="mb-4 text-xl font-semibold">Unsorted</h3>
               <PhotoGallery
                 images={unsortedFiles}
@@ -657,7 +692,7 @@ const [classNum, setClassNum] = useState<number>(0);
           )}
         </main>
       </div>
-      <FooterComponent />
+
       <CodeSnippetModal
         unixCode={unixScript}
         windowsCode={winScript}

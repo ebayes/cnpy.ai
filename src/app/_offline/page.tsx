@@ -37,6 +37,8 @@ export default function Home() {
 
   const [showMoveModal, setShowMoveModal] = useState(false);
 
+  const allImages = classFiles.flatMap(c => c.files); 
+
   const setNewFiles = (newFiles: FileInfo[]) => {
     const existingFiles = files.map((file) => file.hash);
     const filteredNewFiles = newFiles.filter(
@@ -430,7 +432,7 @@ export default function Home() {
                   >
                     <h3 className="mb-4 text-xl font-semibold">{item.name}</h3>
                     <PhotoGallery
-                      images={item.files}
+                      images={allImages}
                       duplicates={item.duplicates}
                       markDeleted={markDeleted}
                       moveToClass={startFileMoving}
