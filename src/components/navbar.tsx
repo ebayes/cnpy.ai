@@ -1,13 +1,16 @@
+// navbar.tsx
+
 import InputFieldsComponent from "@/components/classes";
 import Tooltip from "@/components/tooltip";
 import {
   MultimodalModel,
   ZeroShotClassificationModel,
 } from "@visheratin/web-ai/multimodal";
+import { SegmentationModel, ModelType } from "@visheratin/web-ai/image"
 import { SessionParams } from "@visheratin/web-ai";
 import React, { useEffect, useRef, useState } from "react";
 import { Select, ActionIcon } from '@mantine/core';
-import { IconX } from '@tabler/icons-react';
+import { IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconX } from '@tabler/icons-react';
 
 interface NavbarComponentProps {
   onInputChange: (inputs: string[]) => void;
@@ -61,16 +64,31 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
   };
 
   const loadOther = () => {
-    setStatus({ ...status, busy: true, message: "Initializing AI..." });
-    {/* const modelResult = await MultimodalModel.create("clip-base-quant"); */}
-    console.log(`Model loading time: ${modelResult.elapsed}s`);
-    {/* props.modelCallback(modelResult.model as ZeroShotClassificationModel); */}
-    setOtherLoaded(true);
-    setStatus({ ...status, busy: false, message: "AI was initialized!" });
-    setTimeout(() => {
-      setStatus({ ...status, message: "Ready" });
-    }, 2000);
+  {/* 
+    const metadata = {
+      id: "segformer-b0-segmentation-quant",
+      memEstimateMB: 50,
+      modelPaths: new Map<string, string>([
+        [
+          "model",
+          "https://web-ai-models.org/image/segmentation/segformer-b0/model-quant.onnx.gz",
+        ],
+      ]),
+      configPath:
+        "https://web-ai-models.org/image/segmentation/segformer-b0/config.json",
+      preprocessorPath:
+        "https://web-ai-models.org/image/segmentation/segformer-b0/preprocessor_config.json",
+    }
+    const model = new SegmentationModel(metadata);
+    const elapsed = await model.init()
+    console.log(elapsed)
+    */}
   };
+
+
+
+
+
   
 
   const process = () => {
@@ -112,9 +130,9 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
               loadOther();
             }
           }}
-          className="bg-blue-600 text-white w-full py-2 px-4 rounded hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          className="bg-orange-400 text-white py-2 px-4 rounded hover:bg-orange-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
-          Initialize
+          <IconPower/>
         </button>
 
         </div>
@@ -148,7 +166,7 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
           onClick={() => process()}
           className="bg-emerald-500 text-white text-xl py-2 my-2 px-4 rounded focus:outline-none"
         >
-          Start
+          <IconPlayerPlay/>
         </button>
         <button
           hidden={!modelLoaded || props.classNum === 0 || !status.busy}
@@ -156,9 +174,9 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
             console.log("stopping");
             props.stopProcessing();
           }}
-          className="bg-red-500 text-white text-xl py-2 my-2 px-4 rounded focus:outline-none"
+          className="bg-emerald-500 text-white py-2 my-2 px-4 rounded focus:outline-none"
         >
-          Stop
+          <IconPlayerStop/>
         </button>
         <button
           disabled={status.busy || !modelLoaded}
@@ -168,7 +186,7 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
           onClick={() => props.generateScript()}
           className="bg-rose-400 text-white text-xl py-2 px-4 rounded focus:outline-none"
         >
-          Generate script
+          <IconTerminal2/>
         </button>
         <div className="h-2 mt-4 bg-gray-200 rounded">
           <div

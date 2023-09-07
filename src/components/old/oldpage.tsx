@@ -2,12 +2,12 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import PhotoGallery from "@/components/gallery";
 import { FileInfo } from "@/components/fileInfo";
+import { NavbarComponent } from "../components/navbar";
 import { ClassData } from "@/components/classData";
 import {
-  MultimodalModel,
   ZeroShotClassificationModel,
   ZeroShotResult,
 } from "@visheratin/web-ai/multimodal";
@@ -17,56 +17,27 @@ import CodeSnippetModal from "@/components/codeSnippet";
 import IntroComponent from "@/components/intro";
 import FooterComponent from "@/components/footer";
 import ClassSelector from "@/components/classSelector";
-import { Select, ActionIcon, Drawer, Text, Loader } from '@mantine/core';
-import { useDisclosure } from '@mantine/hooks';
-import InputFieldsComponent from "@/components/classes";
-import Tooltip from "@/components/tooltip";
-import { SegmentationModel, ModelType } from "@visheratin/web-ai/image"
-import { SessionParams } from "@visheratin/web-ai";
-import { IconLayoutSidebarRightExpandFilled, IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconX } from '@tabler/icons-react';
-
-interface NavbarComponentProps {
-  onInputChange: (inputs: string[]) => void;
-  modelCallback: (model: ZeroShotClassificationModel) => void;
-  process: (
-    power: number,
-    statusCallback: (status: {
-      progress: number;
-      busy: boolean;
-      message: string;
-    }) => void
-  ) => void;
-  generateScript: () => void;
-  classNum: number;
-  stopProcessing: () => void;
-}
 
 export default function Home() {
   const [classNames, setClassNames] = useState<string[]>([]);
+
   const [unsortedFiles, setUnsortedFiles] = useState<FileInfo[]>([]);
+
   const [files, setFiles] = useState<FileInfo[]>([]);
+
   const [classFiles, setClassFiles] = useState<ClassData[]>([]);
+
   const [modalOpen, setModalOpen] = useState(false);
+
   const [unixScript, setUnixScript] = useState("");
+
   const [winScript, setWinScript] = useState("");
+
   const toStop = useRef(false);
+
   const [movingFile, setMovingFile] = useState<FileInfo | undefined>();
+
   const [showMoveModal, setShowMoveModal] = useState(false);
-  const [opened, { open, close }] = useDisclosure(false);
-
-  const onInputChange = (inputs: string[]) => {
-    setClassNames(inputs);
-    setClassNum(inputs.length);
-  };
-  
-
-  const modelCallback = (model: ZeroShotClassificationModel) => {
-    setModel(model);
-};
-
-const [classNum, setClassNum] = useState<number>(0);
-
-
 
   const setNewFiles = (newFiles: FileInfo[]) => {
     const existingFiles = files.map((file) => file.hash);
@@ -146,7 +117,6 @@ const [classNum, setClassNum] = useState<number>(0);
           result.imageFeatures[0],
           newClasses,
           classes
-          
         );
       } else {
         const predictions = result.results as ClassificationPrediction[][];
@@ -426,198 +396,21 @@ const [classNum, setClassNum] = useState<number>(0);
     setUnsortedFiles(unsortedFiles);
   };
 
-  const progressRef = useRef<HTMLDivElement>(null);
-  const powerRef = useRef<HTMLInputElement>(null);
-
-  const [status, setStatus] = useState({
-    progress: 0,
-    busy: false,
-    message: "Waiting for AI",
-  });
-
-  const [modelLoaded, setModelLoaded] = useState(false);
-  const [otherLoaded, setOtherLoaded] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('CLIP');
-
-  const setProgressValue = (percentage: number) => {
-    progressRef.current!.style.width = `${percentage}%`;
-  };
-
-  const loadCLIP = async () => {
-    const power = 4;
-    SessionParams.numThreads = power;
-    setStatus({ ...status, busy: true, message: "Initializing AI..." });
-    const modelResult = await MultimodalModel.create("clip-base-quant");
-    console.log(`Model loading time: ${modelResult.elapsed}s`);
-    modelCallback(modelResult.model as ZeroShotClassificationModel);
-    setModelLoaded(true);
-    setStatus({ ...status, busy: false, message: "AI was initialized!" });
-    setTimeout(() => {
-      setStatus({ ...status, message: "Ready" });
-    }, 2000);
-  };
-
-  const loadOther = () => {
-  
-  };
-
-  const process = () => {
-    const power = 4;
-    processFiles(power, setStatus);
-  };
-  
-
-  useEffect(() => {
-    setProgressValue(status.progress);
-  }, [status.progress]);
-
-
   return (
     <>
-      <Drawer 
-        opened={opened} 
-        onClose={close} 
-        title="Model"
-        position="right"
-      >
-        <Text>Test</Text>
-      </Drawer>
-      <header id="header" className="px-5 py-2.5 border-b border-gray-300 bg-gray-200">
-        <img src="/icons/logo.png" alt="Logo" width="100"/>
-    </header>
-    <header 
-      id="subheader" 
-      className="px-5 py-2.5 border-b border-gray-300 flex justify-between"
-    >
-      <div id="leftbuttons">
-        <ActionIcon>
-        <IconPower size="1rem"/>
-        </ActionIcon>
-      </div>
-    <div
-    id="mainbuttons"
-    className="flex space-between gap-4"
-  >
-    <Select
-            placeholder="Choose model"
-            defaultValue="CLIP"
-            data={[
-              { value: 'CLIP', label: 'CLIP' },
-              { value: 'Other', label: 'Other' },
-            ]}
-            onChange={(value) => setSelectedModel(value)}
-          />
-
-          
-        <div style={modelLoaded ? { display: "none" } : {}}>
-        <ActionIcon
-          id="poweron"
-          // disabled={status.busy}
-          onClick={() => {
-            if (selectedModel === 'CLIP') {
-              loadCLIP();
-            } else if (selectedModel === 'Other') {
-              loadOther();
-            }
-          }}
-          className="bg-orange-500 text-white hover:bg-orange-600  flex items-center justify-center"
-        >
-          {status.busy ? <Loader color="white" size="1rem" /> : <IconPower size="1rem"/>}
-        </ActionIcon>
-        </div>
-        <div style={!modelLoaded ? { display: "none" } : {}}>
-        <ActionIcon
-          id="poweroff"
-          disabled={status.busy}
-          onClick={() => setModelLoaded(false)}
-          className="bg-red-500 text-white hover:bg-red-600  flex items-center justify-center"
-        >
-          <IconPower size="1rem"/>
-        </ActionIcon>
-        </div>
-
-
-
-        
-        <div style={status.busy ? { display: "none" } : {}}>
-        <ActionIcon
-          disabled={!modelLoaded || classNum === 0}
-          onClick={() => process()}
-          className="bg-emerald-500 text-white hover:bg-emerald-600  flex items-center justify-center"
-        >
-          <IconPlayerPlay size="1rem"/>
-        </ActionIcon>
-        </div>
-
-        <div style={!modelLoaded || classNum === 0 || !status.busy ? { display: "none" } : {}}>
-        <ActionIcon
-         
-          onClick={() => {
-            console.log("stopping");
-            stopProcessing();
-          }}
-          className="bg-red-500 text-white hover:bg-red-600  flex items-center justify-center"
-        >
-          <IconPlayerStop size="1rem"/>
-        </ActionIcon>
-        </div>
-
-
-        <ActionIcon 
-          disabled={status.busy || !modelLoaded || classNum === 0 || status.progress !== 100}
-          onClick={() => generateScript()}
-          className="bg-emerald-500 text-white hover:bg-emerald-600  flex items-center justify-center"
-        >
-          <IconTerminal2 size="1rem"/>
-        </ActionIcon >
-        <ActionIcon
-          onClick={open}
-        >
-          <IconLayoutSidebarRightExpandFilled size="1rem"/>
-        </ActionIcon>
-
-    </div>
-    </header>
-
+      <header className="text-center py-6 bg-blue-600 moving-gradient">
+        <h1 className="text-4xl font-semibold">Canopy</h1>
+      </header>
      
       <div className="flex flex-col lg:flex-row flex-grow min-h-screen">
-<nav className="bg-white p-6 lg:w-80 lg:h-screen">
-      <div id="mainbuttons" className="grid grid-cols-1 gap-4">
-
-          
-        <div
-          className="grid grid-cols-1 gap-4"
-          
-        >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h4 className="text-xl">Set classes</h4>
-
-        </div>
-
-          <InputFieldsComponent
-            onInputChange={onInputChange}
-            busy={status.busy}
-            modelLoaded={modelLoaded}
-          />
-        </div>
-        <div className="h-2 mt-4 bg-gray-200 rounded">
-          <div
-            id="progress-bar"
-            ref={progressRef}
-            className="h-full bg-blue-600 rounded"
-            style={{ width: `${status.progress}%` }}
-          ></div>
-        </div>
-        <div>
-          <p className="font-semibold text-gray-700">
-            Status: <span className="font-normal">{status.message}</span>
-          </p>
-        </div>
-        <div className="relative flex items-center">
-          <div className="flex-grow border-t border-gray-400"></div>
-        </div>
-      </div>
-    </nav>
+        <NavbarComponent
+          onInputChange={setClassNames}
+          modelCallback={setModel}
+          process={processFiles}
+          classNum={classNames.filter((c) => c.length > 0).length}
+          generateScript={generateScript}
+          stopProcessing={stopProcessing}
+        />
         <div className="border-l border-gray-300 h-auto my-2"></div>
         <main className="flex-grow p-6 lg:w-80 lg:h-full">
           <section>

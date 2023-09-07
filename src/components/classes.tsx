@@ -1,3 +1,5 @@
+// classes
+
 import React, { useState, useEffect, useRef } from "react";
 import { InputData } from "./inputData";
 
@@ -10,7 +12,10 @@ interface InputFieldsComponentProps {
 const InputFieldsComponent: React.FC<InputFieldsComponentProps> = (
   props: InputFieldsComponentProps
 ) => {
-  const [inputs, setInputs] = useState<InputData[]>([]);
+  const [inputs, setInputs] = useState<InputData[]>([
+    { id: Date.now(), value: "Tiger" },
+    { id: Date.now(), value: "Deer" },
+  ]);
 
   const addInputField = (index?: number) => {
     const newInput = { id: Date.now(), value: "" };
