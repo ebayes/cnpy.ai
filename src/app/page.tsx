@@ -18,7 +18,7 @@ import FileLoader2 from "@/components/fileLoader2";
 import CodeSnippetModal from "@/components/codeSnippet";
 import FooterComponent from "@/components/footer";
 import ClassSelector from "@/components/classSelector";
-import { Select, ActionIcon, Drawer, Text, Loader, Button, Badge, Tooltip, Slider, Avatar } from '@mantine/core';
+import { Select, ActionIcon, Drawer, Text, Loader, Button, Badge, Tooltip, Slider, Avatar, Code, Anchor } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import InputFieldsComponent from "@/components/classes";
 import DrawerContent from "@/components/drawer";
@@ -226,7 +226,7 @@ const [classNum, setClassNum] = useState<number>(0);
     setStatus({
       progress: 100,
       busy: false,
-      message: `Finished in ${elapsed}s`,
+      message: `${elapsed}`,
     });
     findDuplicates(newClasses);
   };
@@ -409,6 +409,8 @@ const [classNum, setClassNum] = useState<number>(0);
         }
       }
     }
+    unixCommands.push(`echo "Model used: ${selectedModel}. ${files.length} images sorted in ${status.message}s" >> summary.txt`);
+    winCommands.push(`echo "Model used: ${selectedModel}. ${files.length} images sorted in ${status.message}s" >> summary.txt`);
     for (let i = 0; i < classFiles.length; i++) {
       const cls = classFiles[i];
       const totalImages = cls.files.length + cls.duplicates.length;
@@ -619,9 +621,29 @@ const setProgressValue = (percentage: number) => {
       <header 
         id="subheader" 
         style={{backgroundColor: "#F9F8F5", borderBottom: "1px solid #E4E1D8"}}
-        className="px-5 py-1.5 h-[3rem] flex justify-between"
+        className="px-5 py-2 h-[3.5rem] flex justify-between"
       >
-        <FileLoader setNewFiles={setNewFiles} />
+        <div id="uploadbuttons" className='flex gap-2'>
+          <div style={{ height: '35px' }}>
+            <FileLoader setNewFiles={setNewFiles} />
+          </div>
+        <Tooltip
+          label="Clear photos"
+          color="dark"
+          withArrow
+          arrowPosition="center"
+        >
+        <ActionIcon 
+          size="lg"
+          disabled={files.length === 0}
+          onClick={() => setFiles([])}
+          className="bg-red-500 text-white hover:bg-red-600 flex items-center justify-center"
+        >
+          <IconX size="1rem"/>
+        </ActionIcon >
+        </Tooltip>
+        </div>
+
         <div
   id="mainbuttons"
   className="flex items-center space-between gap-2"
@@ -651,7 +673,7 @@ const setProgressValue = (percentage: number) => {
           defaultValue="Custom"
           data={[
             { value: 'Custom', label: 'Custom' },
-            { value: 'Other', label: 'Other' },
+            { value: 'Other', label: 'Coming soon', disabled: true },
           ]}
           onChange={(value) => setSelectedModel(value || '')}
         />
@@ -714,7 +736,7 @@ const setProgressValue = (percentage: number) => {
         size="lg"
         disabled={!modelLoaded || classNum === 0 || status.busy}
         onClick={() => process()}
-        className="bg-emerald-500 text-white hover:bg-emerald-600  flex items-center justify-center"
+        className="bg-green-500 text-white hover:bg-emerald-600 flex items-center justify-center"
       >
         <IconPlayerPlay size="1rem"/>
       </ActionIcon>
@@ -724,7 +746,7 @@ const setProgressValue = (percentage: number) => {
       
         <Avatar 
         variant="filled" 
-        color="orange"
+        color="green"
         size="sm"
         style={{ width: '35px', height: '35px' }}
       >
@@ -760,7 +782,7 @@ const setProgressValue = (percentage: number) => {
           size="lg"
           disabled={status.busy || !modelLoaded || classNum === 0 || status.progress !== 100}
           onClick={() => generateScript()}
-          className="bg-emerald-500 text-white hover:bg-emerald-600  flex items-center justify-center"
+          className="bg-green-500 text-white hover:bg-emerald-600  flex items-center justify-center"
         >
           <IconTerminal2 size="1rem"/>
         </ActionIcon >
@@ -829,8 +851,13 @@ const setProgressValue = (percentage: number) => {
       })}
   </div>
 </div>
-
-        
+        <div
+          style={files.length === 0 || status.busy || !modelLoaded || classNum === 0 || status.progress !== 100 ? { visibility: "hidden" } : { visibility: "visible" }}
+        >
+        <Code color="teal">
+            {files.length} images sorted in {status.message}s ({(files.length / parseFloat(status.message)).toFixed(1)} images/s)
+        </Code>
+        </div>
         {/*  <div id="changesize" style={ { width: '160px' } } className="items-center">
           <Slider
             disabled
@@ -912,7 +939,7 @@ const setProgressValue = (percentage: number) => {
         className="bg-[#F7F3EC] border-t-[1px] border-[#E4E1D8] px-5 py-3 flex items-center justify-center h-[3rem]"
       >
         <Text fz="sm" ta="center">
-          Built by <a href="https://www.general-purpose.io"><Text span inherit>General Purpose</Text></a>; powered by <a href="https://github.com/visheratin/web-ai"><Text span inherit>WebAI</Text></a>.
+          Built by <Anchor target="_blank" href="https://www.general-purpose.io" color='black'>General Purpose</Anchor>; powered by <Anchor color='black' target="_blank" href="https://github.com/visheratin/web-ai">WebAI</Anchor>.
         </Text>
       </footer>
 

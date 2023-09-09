@@ -38,7 +38,7 @@ function DrawerContent() {
           <Group position="apart" mt="md" mb="xs" className="flex items-center">
             <Text fz="sm" fw={500}>Speed:</Text>
             <Badge color="blue" variant="light" style={{ marginLeft: '10px' }}>
-            5.5 Images/Second
+            5.8 Images/Second
             </Badge>
           </Group> 
           <Text fz="sm" fw={500}>Classes:</Text>
