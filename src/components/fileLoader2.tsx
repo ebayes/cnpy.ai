@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import Resizer from "react-image-file-resizer";
 import { FileInfo } from "./fileInfo";
-import { Loader } from '@mantine/core';
+import { Loader, Stack, ThemeIcon, Text } from '@mantine/core';
 import md5 from "md5";
 import { IconUpload } from "@tabler/icons-react";
 
@@ -10,7 +10,7 @@ interface FileLoaderProps {
   setNewFiles: (files: FileInfo[]) => void;
 }
 
-const FileLoader = (props: FileLoaderProps) => {
+const FileLoader2 = (props: FileLoaderProps) => {
   const [loading, setLoading] = useState(false);
   const [imgnum, setImgNum] = useState(0); 
   const [total, setTotal] = useState(0);
@@ -65,7 +65,7 @@ const FileLoader = (props: FileLoaderProps) => {
     <div id="upload" className="flex justify-center">
       <div
         {...getRootProps()}
-        className="bg-green-500 justify-center w-40 text-sm text-white hover:bg-green-600 flex rounded-md px-3 py-2 text-center hover:bg-gray-200 cursor-pointer transition-all duration-200"
+        className="justify-center flex rounded-lg px-6 py-4 text-center hover:bg-gray-100 cursor-pointer transition-all duration-200 border-dotted border-2 border-gray-300"
       >
         <input
           {...getInputProps()}
@@ -75,21 +75,16 @@ const FileLoader = (props: FileLoaderProps) => {
           id="file"
           multiple
         />
-        {loading ? (
-          <label id="loading" className="flex items-center justify-center">
-            <Loader color="white" size="1rem" className="mr-2"/>
-            {imgnum} / {total}
-          </label>
-        ) : (
-          <label className="flex items-center justify-center">
-            <IconUpload size="1rem" className="mr-2"/>
-            Upload 
-          </label>
-        )}
+          <Stack align="center" justify="center" h={100} w={180}>
+            <ThemeIcon variant="light" color="gray">
+              <IconUpload size="1rem" />
+            </ThemeIcon>
+            <Text fz="sm" ta="center">Click <Text span c="blue" inherit>upload </Text>or drag and drop to add a new dataset</Text>
+            </Stack>
       </div>
-    </div>
+    </div> 
   );
   
 };
 
-export default FileLoader;
+export default FileLoader2;

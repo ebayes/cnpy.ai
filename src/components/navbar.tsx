@@ -117,7 +117,7 @@ export const NavbarComponent: React.FC<NavbarComponentProps> = (
               { value: 'CLIP', label: 'CLIP' },
               { value: 'Other', label: 'Other' },
             ]}
-            onChange={(value) => setSelectedModel(value)}
+            onChange={(value) => setSelectedModel(value || '')}
           />
 
           

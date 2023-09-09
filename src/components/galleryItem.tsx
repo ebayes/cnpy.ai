@@ -1,7 +1,7 @@
 // galleryItem.tsx
 
-/* eslint-disable @next/next/no-img-element */
 import React, { useState } from "react";
+import Image from 'next/image';
 import { FileInfo } from "./fileInfo";
 import { IconEdit, IconRestore, IconTrash } from "@tabler/icons-react";
 import { Badge, Text } from "@mantine/core";
@@ -15,30 +15,39 @@ interface GalleryItemProps {
 
 const GalleryItem = (props: GalleryItemProps) => {
   return (
-    <div key={props.image.src} className="cursor-pointer relative">
+    <div 
+      key={props.image.src} 
+      className="cursor-pointer relative"
+      >
       
-      <img
-        className={
-          props.image.toDelete
-            ? "object-cover h-48 w-full grayscale blur-[1px]"
-            : "object-cover h-48 w-full"
-        }
+      <Image
+        width={160}
+        height={110}
+        style={{
+          height: '110px',
+          width: '160px',
+          objectFit: props.image.toDelete ? 'cover' : 'cover',
+          filter: props.image.toDelete ? 'grayscale(1) blur(1px)' : 'none',
+          borderRadius: '6px'
+        }}
         src={props.image.src}
+        alt={props.image.name || "Gallery image"}
         onClick={() => props.openImage(props.image)}
       />
+
 <div id="namebuttons" className="flex justify-between items-center w-full pt-1">
   <Text id="filename" size="xs" className="flex-grow" truncate>
     {props.image.name}
   </Text>
 
-  <div className="flex gap-2">
+  <div className="flex">
 
 
     {props.image.classPredictions && props.image.classPredictions.length > 0 && props.image.classPredictions[0].class && (
   <>
     <button
       onClick={() => {props.moveToClass(props.image);}}
-      className="bg-blue-500 text-white w-5 h-5 flex items-center justify-center rounded-full"
+      className="w-5 h-5 flex items-center justify-center rounded-full"
     >
       <IconEdit size="0.8rem"/>
     </button>
@@ -52,14 +61,14 @@ const GalleryItem = (props: GalleryItemProps) => {
       }}
       className={
         props.image.toDelete
-          ? "bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full"
-          : "bg-red-500 text-white w-5 h-5 flex items-center justify-center rounded-full"
+          ? "w-5 h-5 flex items-center justify-center rounded-full"
+          : "w-5 h-5 flex items-center justify-center rounded-full"
       }
     >
       {props.image.toDelete ? (
-        <IconRestore size="0.8rem"/>
+        <IconRestore color="green" size="0.8rem"/>
       ) : (
-        <IconTrash size="0.8rem"/>
+        <IconTrash color="red" size="0.8rem"/>
       )}
     </button>
   </div>

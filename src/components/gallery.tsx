@@ -37,7 +37,7 @@ const PhotoGallery = (props: PhotoGalleryProps) => {
 
   return (
     <div>
-      <div className="grid grid-cols-2 2xl:grid-cols-10 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-4 md:grid-cols-8 2xl:grid-cols-10 gap-4">
         {allImages.map((image) => (
           <GalleryItem
             image={image}
