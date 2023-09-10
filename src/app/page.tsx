@@ -22,6 +22,7 @@ import { Select, ActionIcon, Drawer, Text, Loader, Button, Badge, Tooltip, Slide
 import { useDisclosure } from '@mantine/hooks';
 import InputFieldsComponent from "@/components/classes";
 import DrawerContent from "@/components/drawer";
+import DrawerContentGeneral from "@/components/drawer2";
 import { SegmentationModel, ModelType } from "@visheratin/web-ai/image"
 import { SessionParams } from "@visheratin/web-ai";
 import { IconArrowBarLeft, IconBrain, IconEdit, IconHelpCircle, IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconUpload, IconX } from '@tabler/icons-react';
