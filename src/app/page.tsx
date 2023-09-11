@@ -12,7 +12,7 @@ import {
   ZeroShotClassificationModel,
   ZeroShotResult,
 } from "@visheratin/web-ai/multimodal";
-import { ClassificationPrediction } from "@visheratin/web-ai/image";
+import { ClassificationPrediction, ImageModel } from "@visheratin/web-ai/image";
 import FileLoader from "@/components/fileLoader";
 import FileLoader2 from "@/components/fileLoader2";
 import CodeSnippetModal from "@/components/codeSnippet";
@@ -45,6 +45,7 @@ interface NavbarComponentProps {
 
 export default function Home() {
   const [classNames, setClassNames] = useState<string[]>([]);
+  const [CLIPModel, setCLIPModel] = useState(false);
   const [unsortedFiles, setUnsortedFiles] = useState<FileInfo[]>([]);
   const [files, setFiles] = useState<FileInfo[]>([]);
   const [classFiles, setClassFiles] = useState<ClassData[]>([]);
@@ -56,21 +57,34 @@ export default function Home() {
   const [showMoveModal, setShowMoveModal] = useState(false);
   const [opened, { open, close }] = useDisclosure(false);
   const [selectedClass, setSelectedClass] = useState('All');
+  const [classNum, setClassNum] = useState<number>(0);
+  const [model, setModel] = useState<ZeroShotClassificationModel>();
+  const [modelLoaded, setModelLoaded] = useState(false);
+  const [selectedModel, setSelectedModel] = useState('Custom');
+  const progressRef = useRef<HTMLDivElement>(null);
+  const powerRef = useRef<HTMLInputElement>(null);
   const [totalImagesPerClass, setTotalImagesPerClass] = useState<Record<string, number>>(
     classNames.reduce((acc, curr) => ({ ...acc, [curr]: 0 }), {})
-  );
+  );  
+
+  const [otherValues, setOtherValues] = useState<string[]>([]);
 
   useEffect(() => {
-    const totalImages: Record<string, number> = {};
-    for (const cls of classFiles) {
-      totalImages[cls.name] = cls.files.length + cls.duplicates.reduce((acc, curr) => acc + curr.files.length, 0);
-    }
-    setTotalImagesPerClass(totalImages);
-  }, [classFiles]);
-  
-  
+    // Fetch the JSON file
+    fetch('https://web-ai-models.org/image/classification/mobilevit-small/config.json')
+      .then((response) => response.json())
+      .then((data) => {
+        // Extract the values from the "id2label" field and store them in 'otherValues'
+        if ('id2label' in data) {
+          const values = Object.values(data.id2label).map(String);
+          setOtherValues(values);
+        }        
+      })
+      .catch((error) => {
+        console.error('Error fetching JSON:', error);
+      });
+  }, []);
 
-  // Count classes and edits
   const [classChanges, setClassChanges] = useState<Record<string, number>>(() => {
     const changes: Record<string, number> = {};
     classNames.forEach((className) => {
@@ -78,7 +92,6 @@ export default function Home() {
     });
     return changes;
   });
-
 
   const MARKS = [
     { value: 1, label: 'sm' },
@@ -91,20 +104,17 @@ export default function Home() {
     {label: 'Unsorted', value: 'Unsorted'}, // new option
     ...classNames.map(name => ({label: name, value: name}))
   ];
-  
 
   const filteredClasses = 
   selectedClass === 'All' ? classFiles : 
   selectedClass === 'Unsorted' ? [ { name: 'Unsorted', files: unsortedFiles, duplicates: [] } ] : 
   classFiles.filter(c => c.name === selectedClass);
 
-
   const onInputChange = (inputs: string[]) => {
     setClassNames(inputs);
     setClassNum(inputs.length);
   };
   
-
   const modelCallback = (model: ZeroShotClassificationModel) => {
     setModel(model);
     const changes: Record<string, number> = {};
@@ -113,12 +123,16 @@ export default function Home() {
     });
     setClassChanges(changes);
   };
+
+  const modelCallback2 = (model: any) => {
+    setModel(model);
+    const changes: Record<string, number> = {};
+    classNames.forEach((className) => {
+      changes[className] = 0;
+    });
+    setClassChanges(changes);
+  };
   
-
-const [classNum, setClassNum] = useState<number>(0);
-
-
-
   const setNewFiles = (newFiles: FileInfo[]) => {
     const existingFiles = files.map((file) => file.hash);
     const filteredNewFiles = newFiles.filter(
@@ -131,8 +145,6 @@ const [classNum, setClassNum] = useState<number>(0);
       return [...prevFiles, ...filteredNewFiles];
     });
   };
-
-  const [model, setModel] = useState<ZeroShotClassificationModel>();
 
   const processFiles = async (
     power: number,
@@ -229,7 +241,98 @@ const [classNum, setClassNum] = useState<number>(0);
       busy: false,
       message: `${elapsed}`,
     });
-    findDuplicates(newClasses);
+  };
+
+  const processFiles2 = async (
+    power: number,
+    setStatus: (status: {
+      progress: number;
+      busy: boolean;
+      message: string;
+    }) => void
+  ) => {
+    if (!model) {
+      setStatus({ busy: false, progress: 0, message: "Model was not loaded!" });
+      setTimeout(() => {
+        setStatus({
+          busy: false,
+          progress: 0,
+          message: "Waiting for the model",
+        });
+      }, 2000);
+      return;
+    }
+    const classes = [...otherValues];
+    if (
+      classes.length === 0 ||
+      classes.filter((c) => c.length > 0).length === 0
+    ) {
+      setStatus({
+        busy: false,
+        progress: 0,
+        message: "No classes were set!",
+      });
+      return;
+    }
+    const newClasses = classes.map((name): ClassData => {
+      return {
+        name: name,
+        files: [],
+        duplicates: [],
+      };
+    });
+    setStatus({ progress: 0, busy: true, message: "Processing..." });
+    const start = performance.now();
+    const batch = power;
+    const dataFiles = [...files];
+    setUnsortedFiles([...files]);
+    for (let i = 0; i < dataFiles.length; i += batch) {
+      setStatus({
+        busy: true,
+        message: "Processing...",
+        progress: (i / dataFiles.length) * 100,
+      });
+      const toProcessFiles = dataFiles.slice(i, i + batch);
+      const toProcess = toProcessFiles.map((file) => file.src);
+      const result = await model.process(toProcess, 3 as any);
+      if (toProcess.length === 1) {
+        const prediction = result.results as ClassificationPrediction[];
+        processResult2(
+          toProcessFiles[0],
+          prediction,
+          newClasses,
+          classes
+          
+        );
+      } else {
+        const predictions = result.results as ClassificationPrediction[][];
+        predictions.forEach((pred, index) => {
+          const prediction = pred;
+          processResult2(
+            toProcessFiles[index],
+            prediction,
+            newClasses,
+            classes
+          );
+        });
+      }
+      if (toStop.current) {
+        setStatus({
+          progress: 0,
+          busy: false,
+          message: "Stopped",
+        });
+        toStop.current = false;
+        return;
+      }
+    }
+    const end = performance.now();
+    const elapsed = Math.round((end - start) / 10) / 100;
+    setStatus({
+      progress: 100,
+      busy: false,
+      message: `${elapsed}`,
+    });
   };
 
   const processResult = (
@@ -259,82 +362,29 @@ const [classNum, setClassNum] = useState<number>(0);
     return;
   };
 
-  const cosineSim = (vector1: number[], vector2: number[]) => {
-    let dotproduct = 0;
-    let m1 = 0;
-    let m2 = 0;
-    for (let i = 0; i < vector1.length; i++) {
-      dotproduct += vector1[i] * vector2[i];
-      m1 += vector1[i] * vector1[i];
-      m2 += vector2[i] * vector2[i];
+  const processResult2 = (
+    file: FileInfo,
+    result: ClassificationPrediction[],
+    classData: ClassData[],
+    classes: string[]
+  ) => {
+    file.classPredictions = result;
+    if (result.length === 0) {
+      return;
     }
-    m1 = Math.sqrt(m1);
-    m2 = Math.sqrt(m2);
-    const sim = dotproduct / (m1 * m2);
-    return sim;
-  };
-
-  const findDuplicates = async (clsFiles: ClassData[]) => {
-    const result: ClassData[] = [];
-    clsFiles.forEach((classData: ClassData) => {
-      const files = classData.files;
-      const duplicates: FileInfo[][] = [];
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        let dupeFound = false;
-        for (let j = 0; j < duplicates.length; j++) {
-          const dupes = duplicates[j];
-          for (let k = 0; k < dupes.length; k++) {
-            const dupe = dupes[k];
-            const sim = cosineSim(
-              file.embedding as number[],
-              dupe.embedding as number[]
-            );
-            if (sim > 0.9) {
-              dupes.push(file);
-              files.splice(i, 1);
-              dupeFound = true;
-              break;
-            }
-          }
-          if (dupeFound) {
-            break;
-          }
-        }
-        if (dupeFound) {
-          i--;
-          continue;
-        }
-        for (let j = i + 1; j < files.length; j++) {
-          const file2 = files[j];
-          const sim = cosineSim(
-            file.embedding as number[],
-            file2.embedding as number[]
-          );
-          if (sim > 0.9) {
-            const dupe: FileInfo[] = [file, file2];
-            duplicates.push(dupe);
-            files.splice(j, 1);
-            files.splice(i, 1);
-            i--;
-            break;
-          }
-        }
-      }
-      classData.duplicates = [];
-      for (let i = 0; i < duplicates.length; i++) {
-        const dupes = duplicates[i];
-        if (dupes.length > 1) {
-          classData.duplicates.push({
-            name: `Possible duplicate ${i}`,
-            files: dupes,
-            duplicates: [],
-          });
-        }
-      }
-      result.push(classData);
+    if (result[0].confidence < 0.5) {
+      return;
+    }
+    const foundClass = result[0].class;
+    const foundClassIndex = classes.indexOf(foundClass);
+    classData[foundClassIndex].files.push(file);
+    setClassFiles([...classData]);
+    setUnsortedFiles((prevFiles: FileInfo[]) => {
+      const unsortedIdx = prevFiles.indexOf(file);
+      prevFiles.splice(unsortedIdx, 1);
+      return [...prevFiles];
     });
-    setClassFiles([...result]);
+    return;
   };
 
   const markDeleted = (hash: string) => {
@@ -507,26 +557,20 @@ const [classNum, setClassNum] = useState<number>(0);
     setUnsortedFiles(unsortedFiles);
   };
 
-  const progressRef = useRef<HTMLDivElement>(null);
-  const powerRef = useRef<HTMLInputElement>(null);
-
   const [status, setStatus] = useState({
     progress: 0,
     busy: false,
     message: "Waiting for AI",
   });
 
-  const [modelLoaded, setModelLoaded] = useState(false);
-  const [otherLoaded, setOtherLoaded] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('Custom');
-
-const setProgressValue = (percentage: number) => {
-  if (progressRef.current) {
-    progressRef.current.style.width = `${percentage}%`;  
-  }
-};
+  const setProgressValue = (percentage: number) => {
+    if (progressRef.current) {
+      progressRef.current.style.width = `${percentage}%`;  
+    }
+  };
 
   const loadCLIP = async () => {
+    setCLIPModel(true);
     const power = 4;
     SessionParams.numThreads = power;
     setStatus({ ...status, busy: true, message: "Initializing AI..." });
@@ -540,19 +584,43 @@ const setProgressValue = (percentage: number) => {
     }, 2000);
   };
 
-  const loadOther = () => {
-  
+  const loadOther = async () => {
+    setCLIPModel(false);
+    const power = 4;
+    SessionParams.numThreads = power;
+    setStatus({ ...status, busy: true, message: "Initializing AI..." });
+    const modelResult = await ImageModel.create("mobilevit-small");
+    console.log(`Model loading time: ${modelResult.elapsed}s`);
+    modelCallback2(modelResult.model);
+    setModelLoaded(true);
+    setStatus({ ...status, busy: false, message: "AI was initialized!" });
+    setTimeout(() => {
+      setStatus({ ...status, message: "Ready" });
+    }, 2000);
   };
 
   const process = () => {
     const power = 4;
-    processFiles(power, setStatus);
+    if (CLIPModel) {
+      processFiles(power, setStatus);
+    } else {
+      processFiles2(power, setStatus);
+    }
   };
-  
 
+  useEffect(() => {
+    const totalImages: Record<string, number> = {};
+    for (const cls of classFiles) {
+      totalImages[cls.name] = cls.files.length + cls.duplicates.reduce((acc, curr) => acc + curr.files.length, 0);
+    }
+    setTotalImagesPerClass(totalImages);
+  }, [classFiles]);
+  
   useEffect(() => {
     setProgressValue(status.progress);
   }, [status.progress]);
+
+  const totalImagesAllClasses = Object.values(totalImagesPerClass).reduce((sum, count) => sum + count, 0);
 
   const bgColors = [
     "bg-red-300",
@@ -574,7 +642,6 @@ const setProgressValue = (percentage: number) => {
     "bg-fuchsia-300"
   ];
   
-  
   let colorIndex = 0;
   
   function getNextBgColor() {
@@ -582,10 +649,6 @@ const setProgressValue = (percentage: number) => {
     colorIndex = (colorIndex + 1) % bgColors.length;
     return selectedColor;
   }
-
-  const totalImagesAllClasses = Object.values(totalImagesPerClass).reduce((sum, count) => sum + count, 0);
-
-
 
   return (
     <div style={{ minHeight: '100vh' }} className="flex flex-col">
@@ -650,9 +713,6 @@ const setProgressValue = (percentage: number) => {
   className="flex items-center space-between gap-2"
 >
 
-
-
-
       <Tooltip
         label="Edit model settings"
         color="dark"
@@ -673,14 +733,13 @@ const setProgressValue = (percentage: number) => {
           placeholder="Choose model"
           defaultValue="Custom"
           data={[
-            { value: 'Custom', label: 'Custom' },
-            { value: 'Other', label: 'Coming soon', disabled: true },
+            { value: 'Custom', label: 'CLIP' },
+            { value: 'Other', label: 'MobileNet' },
           ]}
           onChange={(value) => setSelectedModel(value || '')}
         />
         </div>
 
-      
       <div style={modelLoaded ? { display: "none" } : {}}> 
         <Tooltip
           label="Load model"
@@ -724,8 +783,6 @@ const setProgressValue = (percentage: number) => {
         </Tooltip>
        </div>
         
-        
-        
     {(!modelLoaded || classNum === 0 || !status.busy) ? ( 
     <Tooltip
           label="Run model"
@@ -744,7 +801,6 @@ const setProgressValue = (percentage: number) => {
     </Tooltip>
    ) : ( 
     
-      
         <Avatar 
         variant="filled" 
         color="green"
@@ -753,11 +809,7 @@ const setProgressValue = (percentage: number) => {
       >
         {Math.round(status.progress)}%
       </Avatar>
- 
    )} 
-
-    
-
         
         <ActionIcon
           size="lg"
@@ -771,8 +823,6 @@ const setProgressValue = (percentage: number) => {
           <IconPlayerStop size="1rem"/>
         </ActionIcon>
   
-
-
         <Tooltip
           label="Terminal commands"
           color="dark"
@@ -877,7 +927,6 @@ const setProgressValue = (percentage: number) => {
         */}
       </header>
 
-
       <div className="flex flex-col lg:flex-row flex-grow h-full">
         <nav className="bg-white">
           <Drawer 
@@ -933,7 +982,6 @@ const setProgressValue = (percentage: number) => {
             ))}
       </main>
 
-
       </div>
       <footer 
         id="footer" 
@@ -958,5 +1006,5 @@ const setProgressValue = (percentage: number) => {
         onClose={() => setShowMoveModal(false)}
       />
     </div> 
-);
+  );
 }

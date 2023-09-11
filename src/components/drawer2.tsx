@@ -1,3 +1,5 @@
+// drawer2.tsx
+
 import React from 'react'
 import { Text, Badge, Group } from '@mantine/core';
 
@@ -24,7 +26,6 @@ function DrawerContentGeneral() {
           <Badge 
             radius="xl"
             size="xs"
-            compact
             className={`bg-gray-500 text-white hover:bg-gray-500`}
           >
             Tiger etc
