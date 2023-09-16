@@ -2,7 +2,7 @@ import Head from "next/head";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/react";
 
-const GLOBAL_TITLE = "Canopy";
+const GLOBAL_TITLE = "canopy - privacy preserving ai camera trap photo sorter";
 const GLOBAL_DESCRIPTION = "Sort camera trap data with machine learning";
 const GLOBAL_URL = "https://canopy.ai/";
 
