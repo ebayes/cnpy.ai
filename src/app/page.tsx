@@ -2,30 +2,35 @@
 
 "use client";
 
+import React, { Suspense } from 'react';
+import ClassSelector from "@/components/classSelector";
+import CodeSnippetModal from "@/components/codeSnippet";
 import Image from 'next/image';
 import { useEffect, useRef, useState } from "react";
-import PhotoGallery from "@/components/gallery";
+const PhotoGallery = React.lazy(() => import("@/components/gallery"));
 import { FileInfo } from "@/components/fileInfo";
+import { generateScript } from "@/components/generateScript";
 import { ClassData } from "@/components/classData";
+import { convertName } from "@/components/convertName";
+import { logRun, logFeedback, logFinal } from "@/components/Supabase";
 import {
   MultimodalModel,
   ZeroShotClassificationModel,
   ZeroShotResult,
 } from "@visheratin/web-ai/multimodal";
 import { ClassificationPrediction, ImageModel } from "@visheratin/web-ai/image";
-import FileLoader from "@/components/fileLoader";
-import FileLoader2 from "@/components/fileLoader2";
-import CodeSnippetModal from "@/components/codeSnippet";
+const FileLoader = React.lazy(() => import("@/components/fileLoader"));
+const FileLoader2 = React.lazy(() => import("@/components/fileLoader2"));
 import FooterComponent from "@/components/footer";
-import ClassSelector from "@/components/classSelector";
-import { Select, ActionIcon, Drawer, Text, Loader, Button, Badge, Tooltip, Slider, Avatar, Code, Anchor } from '@mantine/core';
+
+import { Select, ActionIcon, ThemeIcon, TextInput, Textarea, Text, Title, Loader, Button, Badge, Tooltip, Slider, Avatar, Code, Anchor, Box, Flex, Popover, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import InputFieldsComponent from "@/components/classes";
 import DrawerContent from "@/components/drawer";
 import DrawerContentGeneral from "@/components/drawer2";
 import { SegmentationModel, ModelType } from "@visheratin/web-ai/image"
 import { SessionParams } from "@visheratin/web-ai";
-import { IconArrowBarLeft, IconBrain, IconEdit, IconHelpCircle, IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconUpload, IconX } from '@tabler/icons-react';
+import { IconArrowBarLeft, IconCheck, IconBrain, IconEdit, IconHelpCircle, IconMessageCircle2, IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconUpload, IconX, IconDatabaseOff } from '@tabler/icons-react';
 
 interface NavbarComponentProps {
   onInputChange: (inputs: string[]) => void;
@@ -44,6 +49,15 @@ interface NavbarComponentProps {
 }
 
 export default function Home() {
+  const [isLoading, setIsLoading] = useState(true);
+  const [showNotification, setShowNotification] = useState(false);
+  const handleSubmit = () => {
+    logFeedback(feedbackName, feedbackEmail, feedbackMessage);
+    setShowNotification(true);
+  };
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackEmail, setFeedbackEmail] = useState('');
+  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [classNames, setClassNames] = useState<string[]>([]);
   const [CLIPModel, setCLIPModel] = useState(false);
   const [unsortedFiles, setUnsortedFiles] = useState<FileInfo[]>([]);
@@ -66,8 +80,48 @@ export default function Home() {
   const [totalImagesPerClass, setTotalImagesPerClass] = useState<Record<string, number>>(
     classNames.reduce((acc, curr) => ({ ...acc, [curr]: 0 }), {})
   );  
+  const [showSettings, setShowSettings] = useState(false);
 
   const [otherValues, setOtherValues] = useState<string[]>([]);
+
+  const removeFromUnsorted = (hash: string) => {
+    setUnsortedFiles((prevFiles: FileInfo[]) => {
+      const fileIndex = prevFiles.findIndex(file => file.hash === hash);
+      if (fileIndex === -1) return prevFiles; // File not found in unsortedFiles
+  
+      const file = prevFiles[fileIndex];
+      const highestPredictionClass = file.classPredictions[0].class;
+  
+      // Remove file from unsortedFiles
+      prevFiles.splice(fileIndex, 1);
+  
+      // Add file to the class it has the highest prediction for
+      setClassFiles((prevClassFiles: ClassData[]) => {
+        const classIndex = prevClassFiles.findIndex(cls => cls.name === highestPredictionClass);
+        if (classIndex !== -1) {
+          prevClassFiles[classIndex].files.push(file);
+        }
+        return [...prevClassFiles];
+      });
+  
+      // Update totalImagesPerClass
+      setTotalImagesPerClass(prevState => {
+        const newState = { ...prevState };
+        newState['Unsorted'] = (newState['Unsorted'] || 0) - 1;
+        newState[highestPredictionClass] = (newState[highestPredictionClass] || 0) + 1;
+        return newState;
+      });
+  
+      // Update classChanges
+      setClassChanges(prevState => {
+        const newState = { ...prevState };
+        newState[highestPredictionClass] = (newState[highestPredictionClass] || 0) + 1;
+        return newState;
+      });
+  
+      return [...prevFiles];
+    });
+  };
 
   useEffect(() => {
     // Fetch the JSON file
@@ -78,12 +132,14 @@ export default function Home() {
         if ('id2label' in data) {
           const values = Object.values(data.id2label).map(String);
           setOtherValues(values);
+          setIsLoading(false);
         }        
       })
       .catch((error) => {
         console.error('Error fetching JSON:', error);
       });
   }, []);
+  
 
   const [classChanges, setClassChanges] = useState<Record<string, number>>(() => {
     const changes: Record<string, number> = {};
@@ -145,6 +201,34 @@ export default function Home() {
       return [...prevFiles, ...filteredNewFiles];
     });
   };
+
+  const bgColors = [
+    "bg-red-300",
+    "bg-blue-300",
+    "bg-green-300",
+    "bg-indigo-300",
+    "bg-purple-300",
+    "bg-pink-300",
+    "bg-gray-300",
+    "bg-teal-300",
+    "bg-lime-300",
+    "bg-rose-300",
+    "bg-cyan-300",
+    "bg-orange-300",
+    "bg-amber-300",
+    "bg-emerald-300",
+    "bg-violet-300",
+    "bg-sky-300",
+    "bg-fuchsia-300"
+  ];
+  
+  let colorIndex = 0;
+  
+  function getNextBgColor() {
+    const selectedColor = bgColors[colorIndex];
+    colorIndex = (colorIndex + 1) % bgColors.length;
+    return selectedColor;
+  }
 
   const processFiles = async (
     power: number,
@@ -241,6 +325,15 @@ export default function Home() {
       busy: false,
       message: `${elapsed}`,
     });
+ 
+    const imageCount = files.length;
+    const classesCount: Record<string, number> = {};
+    newClasses.forEach((classData) => {
+      classesCount[classData.name] = classData.files.length;
+    });
+      
+    // logrun in supabase
+    logRun(selectedModel, imageCount, classesCount, elapsed);
   };
 
   const processFiles2 = async (
@@ -333,6 +426,14 @@ export default function Home() {
       busy: false,
       message: `${elapsed}`,
     });
+    const imageCount = files.length;
+    const classesCount: Record<string, number> = {};
+    newClasses.forEach((classData) => {
+      classesCount[classData.name] = classData.files.length;
+    });
+
+    // logrun in supabase
+    logRun(selectedModel, imageCount, classesCount, elapsed);
   };
 
   const processResult = (
@@ -353,6 +454,10 @@ export default function Home() {
     const foundClass = result[0].class;
     const foundClassIndex = classes.indexOf(foundClass);
     classData[foundClassIndex].files.push(file);
+
+    file.newClass = foundClass; 
+    file.color = "bg-red-300"; // here
+
     setClassFiles([...classData]);
     setUnsortedFiles((prevFiles: FileInfo[]) => {
       const unsortedIdx = prevFiles.indexOf(file);
@@ -378,6 +483,10 @@ export default function Home() {
     const foundClass = result[0].class;
     const foundClassIndex = classes.indexOf(foundClass);
     classData[foundClassIndex].files.push(file);
+
+    file.newClass = foundClass; 
+    file.color = "bg-red-300"; // here
+
     setClassFiles([...classData]);
     setUnsortedFiles((prevFiles: FileInfo[]) => {
       const unsortedIdx = prevFiles.indexOf(file);
@@ -422,74 +531,7 @@ export default function Home() {
     }
   };
 
-  const generateScript = () => {
-    const unixCommands: string[] = [];
-    const winCommands: string[] = [];
-    const unsorted = unsortedFiles.filter((f) => f.toDelete);
-    for (let i = 0; i < unsorted.length; i++) {
-      const file = unsorted[i];
-      unixCommands.push(`rm "${file.name}"`);
-      winCommands.push(`del /q "${file.name}"`);
-    }
-    const clsFiles = [...classFiles];
-    for (let i = 0; i < clsFiles.length; i++) {
-      unixCommands.push(`mkdir "${clsFiles[i].name}"`);
-      winCommands.push(`mkdir "${clsFiles[i].name}"`);
-      const cls = clsFiles[i];
-      for (let j = 0; j < cls.files.length; j++) {
-        const file = cls.files[j];
-        if (file.toDelete) {
-          unixCommands.push(`rm "${file.name}"`);
-          winCommands.push(`del /q "${file.name}"`);
-        } else {
-          unixCommands.push(`mv "${file.name}" "${cls.name}"/`);
-          winCommands.push(`move "${file.name}" "${cls.name}"/`);
-        }
-      }
-      for (let j = 0; j < cls.duplicates.length; j++) {
-        const dupes = cls.duplicates[j];
-        for (let k = 0; k < dupes.files.length; k++) {
-          const file = dupes.files[k];
-          if (file.toDelete) {
-            unixCommands.push(`rm "${file.name}"`);
-            winCommands.push(`del /q "${file.name}"`);
-          } else {
-            unixCommands.push(`mv "${file.name}" "${cls.name}"/`);
-            winCommands.push(`move "${file.name}" "${cls.name}"/`);
-          }
-        }
-      }
-    }
-    unixCommands.push(`echo "Model used: ${selectedModel}. ${files.length} images sorted in ${status.message}s" >> summary.txt`);
-    winCommands.push(`echo "Model used: ${selectedModel}. ${files.length} images sorted in ${status.message}s" >> summary.txt`);
-    for (let i = 0; i < classFiles.length; i++) {
-      const cls = classFiles[i];
-      const totalImages = cls.files.length + cls.duplicates.length;
-      if (!isNaN(totalImages)) {
-        setTotalImagesPerClass(prevState => ({ ...prevState, [cls.name]: totalImages }));
-      }      
-      const classChangeCount = classChanges[cls.name] || 0;
-  
-      // Calculate percent accuracy rounded to 0 decimal points
-      const percentAccuracy = Math.round(((totalImages - classChangeCount) / totalImages) * 100);
-  
-      // Generate the log message
-      let logMessage = `${totalImages} ${cls.name}; ${classChangeCount} errors`;
-      if (!isNaN(percentAccuracy)) {
-        logMessage += ` (${percentAccuracy}% accuracy)`;
-      }
-  
-      // Append logging messages to commands
-      unixCommands.push(`echo "${logMessage}" >> summary.txt`);
-      winCommands.push(`echo "${logMessage}" >> summary.txt`);
-    }
 
-    const unixScript = unixCommands.join("\n");
-    const winScript = winCommands.join("\n");
-    setUnixScript(unixScript);
-    setWinScript(winScript);
-    setModalOpen(true);
-  };
 
   const stopProcessing = () => {
     console.log("Stopping processing");
@@ -589,7 +631,7 @@ export default function Home() {
     const power = 4;
     SessionParams.numThreads = power;
     setStatus({ ...status, busy: true, message: "Initializing AI..." });
-    const modelResult = await ImageModel.create("mobilevit-small");
+    const modelResult = await ImageModel.create("mobilevit-small"); // fastvit-large-quant, tiny etc
     console.log(`Model loading time: ${modelResult.elapsed}s`);
     modelCallback2(modelResult.model);
     setModelLoaded(true);
@@ -600,6 +642,7 @@ export default function Home() {
   };
 
   const process = () => {
+    // clear classes
     const power = 4;
     if (CLIPModel) {
       processFiles(power, setStatus);
@@ -614,7 +657,7 @@ export default function Home() {
       totalImages[cls.name] = cls.files.length + cls.duplicates.reduce((acc, curr) => acc + curr.files.length, 0);
     }
     setTotalImagesPerClass(totalImages);
-  }, [classFiles]);
+  }, [classFiles, unsortedFiles]); 
   
   useEffect(() => {
     setProgressValue(status.progress);
@@ -622,41 +665,59 @@ export default function Home() {
 
   const totalImagesAllClasses = Object.values(totalImagesPerClass).reduce((sum, count) => sum + count, 0);
 
-  const bgColors = [
-    "bg-red-300",
-    "bg-blue-300",
-    "bg-green-300",
-    "bg-indigo-300",
-    "bg-purple-300",
-    "bg-pink-300",
-    "bg-gray-300",
-    "bg-teal-300",
-    "bg-lime-300",
-    "bg-rose-300",
-    "bg-cyan-300",
-    "bg-orange-300",
-    "bg-amber-300",
-    "bg-emerald-300",
-    "bg-violet-300",
-    "bg-sky-300",
-    "bg-fuchsia-300"
-  ];
+  let classesToPass = classNames; 
+
+  if (selectedModel === 'Other') {
+    classesToPass = otherValues;
+  }
+
   
-  let colorIndex = 0;
-  
-  function getNextBgColor() {
-    const selectedColor = bgColors[colorIndex];
-    colorIndex = (colorIndex + 1) % bgColors.length;
-    return selectedColor;
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <header 
+          id="header" 
+          style={{backgroundColor: "#F7F3EC", borderBottom: "1px solid #E4E1D8"}}
+          className="px-5 py-3 flex justify-between h-[3.5rem]"
+        >
+          <Image 
+          src="/icons/logo.png" 
+          alt="Logo" 
+          className="object-contain"
+          width={120}
+          height={120}
+        />
+        <div className="flex items-center justify-end">
+          
+        </div>
+
+        </header>
+        <header 
+          id="subheader" 
+          style={{backgroundColor: "#F9F8F5", borderBottom: "1px solid #E4E1D8"}}
+          className="px-5 py-2 h-[3.5rem] flex justify-between"
+        ></header>
+        <div className='flex-grow w-full flex items-center justify-center'>
+          <Loader color="gray" size="1rem" />
+        </div>
+        <footer className="bg-[#F7F3EC] border-t-[1px] border-[#E4E1D8] px-5 py-3 flex items-center justify-center h-[3rem]">
+                  <Text fz="sm" ta="center">
+          Built by General Purpose; powered by WebAI.
+        </Text>
+        </footer>
+      </div>
+    );
   }
 
   return (
-    <div style={{ minHeight: '100vh' }} className="flex flex-col">
+    <div style={{ minHeight: '100vh' }} className="flex flex-col min-h-screen">
+     
 
       <header 
         id="header" 
         style={{backgroundColor: "#F7F3EC", borderBottom: "1px solid #E4E1D8"}}
-        className="px-5 py-3 flex justify-between h-15"
+        className="px-5 py-3 flex justify-between h-[3.5rem]"
       >
         <Image 
           src="/icons/logo.png" 
@@ -665,6 +726,7 @@ export default function Home() {
           width={120}
           height={120}
         />
+        <div className="flex items-center justify-end">
         <Tooltip
           multiline
           width={200}
@@ -674,13 +736,70 @@ export default function Home() {
           arrowPosition="center"
           transitionProps={{ duration: 200 }}
         >
-        <ActionIcon 
+        <ThemeIcon 
+          variant="light" color="gray"
           size="lg"
-          className="text-black flex items-center justify-center"
+          className="text-black flex items-center justify-center bg-transparent"
         >
           <IconHelpCircle size="1rem"/>
-        </ActionIcon >
+        </ThemeIcon >
         </Tooltip>
+
+        <Popover width={300} trapFocus position="bottom" withArrow shadow="md" onClose={() => setShowNotification(false)}>
+        <Popover.Target>
+          <Tooltip          
+            label="Submit feedback"
+            color="dark"
+            withArrow
+            arrowPosition="center"
+            transitionProps={{ duration: 200 }}
+          >
+          <ActionIcon 
+            size="lg"
+            variant="transparent"
+            className="text-black flex items-center justify-center"
+          >
+            <IconMessageCircle2 size="1rem"/>
+          </ActionIcon>
+          </Tooltip>
+        </Popover.Target>
+        <Popover.Dropdown className='gap-3' sx={(theme) => ({ background: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: '100%' })}>
+          <TextInput 
+            label="Name:" 
+            placeholder="Insert name" 
+            size="sm" 
+            style={{ width: '100%' }} 
+            value={feedbackName} 
+            onChange={(event) => setFeedbackName(event.currentTarget.value)}
+          />
+          <TextInput 
+            label="Email:" 
+            placeholder="Insert email" 
+            size="sm" 
+            style={{ width: '100%' }} 
+            value={feedbackEmail} 
+            onChange={(event) => setFeedbackEmail(event.currentTarget.value)}
+          />
+          <Textarea 
+            label="Feedback:" 
+            placeholder="Insert message here"
+            minRows={5}
+            size="sm"
+            style={{ width: '100%' }}
+            value={feedbackMessage} 
+            onChange={(event) => setFeedbackMessage(event.currentTarget.value)}
+          />
+          <Button 
+            onClick={handleSubmit}
+            className="bg-blue-100 text-blue-400 hover:text-blue-600 hover:bg-blue-300  flex items-center justify-center"
+            style={{ width: '100%' }}
+          >
+            {showNotification ? <IconCheck size="1rem"/> : 'Submit'}
+          </Button>
+        </Popover.Dropdown>
+      </Popover>
+</div>
+
       </header>
       <header 
         id="subheader" 
@@ -689,7 +808,16 @@ export default function Home() {
       >
         <div id="uploadbuttons" className='flex gap-2'>
           <div style={{ height: '35px' }}>
+          <Tooltip
+              label="Click or drag and drop to add a new dataset"
+              color="dark"
+              withArrow
+              arrowPosition="center"
+            >
+              <Suspense fallback={<div></div>}>
             <FileLoader setNewFiles={setNewFiles} />
+            </Suspense>
+            </Tooltip>
           </div>
         <Tooltip
           label="Clear photos"
@@ -700,7 +828,16 @@ export default function Home() {
         <ActionIcon 
           size="lg"
           disabled={files.length === 0}
-          onClick={() => setFiles([])}
+          onClick={() => {
+            setFiles([]);
+            setClassFiles([]);
+            setTotalImagesPerClass({});
+            setUnsortedFiles([]);
+            setStatus(prevStatus => ({
+              ...prevStatus,
+              progress: 0
+            })); 
+          }}
           className="bg-red-500 text-white hover:bg-red-600 flex items-center justify-center"
         >
           <IconX size="1rem"/>
@@ -721,7 +858,7 @@ export default function Home() {
       >
       <Button 
         rightIcon={<IconHelpCircle size="1rem" />}
-        onClick={open}
+        onClick={() => setShowSettings(true)}
         className="bg-blue-100 text-blue-400 hover:text-blue-600 hover:bg-blue-300  flex items-center justify-center"
       >
         Model
@@ -730,13 +867,23 @@ export default function Home() {
 
         <div className="w-40">
         <Select
+          id="choosemodel"
           placeholder="Choose model"
           defaultValue="Custom"
           data={[
-            { value: 'Custom', label: 'CLIP' },
-            { value: 'Other', label: 'MobileNet' },
+            { value: 'Custom', label: '🧠  Custom' },
+            { value: 'Other', label: '🇧🇹  India/Bhutan' },
+            { value: 'New', label: '➕  Add new', disabled: true },
           ]}
-          onChange={(value) => setSelectedModel(value || '')}
+          onChange={(value) => {
+            setStatus({
+              progress: 0,
+              busy: false,
+              message: "Reset progress",
+            });
+            setSelectedModel(value || '');
+            setModelLoaded(false);
+          }}
         />
         </div>
 
@@ -774,8 +921,16 @@ export default function Home() {
           <ActionIcon
             id="poweroff"
             size="lg"
-            disabled={status.busy}
-            onClick={() => setModelLoaded(false)}
+            // disabled={status.busy}
+            onClick={() => {
+              // setClassFiles([]);
+              setModelLoaded(false);
+              setStatus({
+                progress: 0,
+                busy: false,
+                message: "Reset progress",
+              });
+            }}
             className="bg-red-500 text-white hover:bg-red-600  flex items-center justify-center"
           >
             <IconPower size="1rem"/>
@@ -793,7 +948,10 @@ export default function Home() {
       <ActionIcon
         size="lg"
         disabled={!modelLoaded || classNum === 0 || status.busy}
-        onClick={() => process()}
+        onClick={() => {
+          setClassFiles([]);
+          process();
+        }}
         className="bg-green-500 text-white hover:bg-emerald-600 flex items-center justify-center"
       >
         <IconPlayerPlay size="1rem"/>
@@ -832,7 +990,19 @@ export default function Home() {
         <ActionIcon 
           size="lg"
           disabled={status.busy || !modelLoaded || classNum === 0 || status.progress !== 100}
-          onClick={() => generateScript()}
+          onClick={() => generateScript(
+            unsortedFiles, 
+            classFiles, 
+            selectedModel, 
+            convertName, 
+            files, 
+            status, 
+            classChanges, 
+            setTotalImagesPerClass, 
+            setUnixScript, 
+            setWinScript, 
+            setModalOpen
+          )}
           className="bg-green-500 text-white hover:bg-emerald-600  flex items-center justify-center"
         >
           <IconTerminal2 size="1rem"/>
@@ -841,114 +1011,104 @@ export default function Home() {
         </div>
       </header>
 
-      <header id="subsubheader" className="px-5 py-2.5 flex justify-between">
+      <header 
+      id="subsubheader" 
+      className="px-5 py-2.5 flex justify-between"
+      style={{ display: 'flex' }}
+    >
       <div 
         id="leftbuttons" 
-        style={files.length === 0 ? { visibility: "hidden" } : { visibility: "visible" }}
-        className="flex items-center"
+        style={{ 
+          flex: 1,  // updated from 0.7 to 1
+          visibility: files.length === 0 ? 'hidden' : 'visible', 
+          overflowX: 'auto' 
+        }}
+        className="flex gap-2 overflow-x-auto whitespace-nowrap"
       >
-  {/* 
-  <div id="dropdown" className="w-40 mr-2">
-    <Select
-      placeholder="Choose class"
-      value={selectedClass}
-      data={classOptions}
-      onChange={setSelectedClass}
-    />
-  </div>
-  */}
-  <div id="logTotalImagesInBadges" className="gap-2 space-x-2">
-  <Button 
-  id={`badgeclass-all`} 
-  key="UnsortedFiles" 
-  radius="xl" 
-  size="xs"
-  compact
-  onClick={() => setSelectedClass("All")}
-  className={`bg-gray-400 text-white hover:bg-gray-500`}
->
-  {files.length} Images
-</Button>
-  <Button 
-  style={!modelLoaded ? { display: "none" } : {}}
-  id={`badgeclass-unsorted`} 
-  key="UnsortedFiles" 
-  radius="xl" 
-  size="xs"
-  compact
-  onClick={() => setSelectedClass("Unsorted")}
-  className={`bg-yellow-400 text-white hover:bg-gray-500`}
->
-  {unsortedFiles.length} Unsorted
-</Button>
-    {Object.entries(totalImagesPerClass)
-      .filter(([clsName, totalImages]) => totalImages > 0)
-      .map(([clsName, totalImages]) => {
-        const nextColor = getNextBgColor(); 
+         
+              <Button 
+                id={`badgeclass-all`} 
+                key="UnsortedFiles" 
+                radius="xl" 
+                size="xs"
+                compact
+                onClick={() => setSelectedClass("All")}
+                className={`bg-gray-400 text-white hover:bg-gray-500`}
+              >
+                {files.length} Images
+              </Button>
+              
+              {
+                (!status.busy && modelLoaded && classNum !== 0 && status.progress === 100 && unsortedFiles.length !== 0) && (
+                  <Button 
+                    id={`badgeclass-unsorted`} 
+                    key="UnsortedFiles" 
+                    radius="xl" 
+                    size="xs"
+                    compact
+                    onClick={() => setSelectedClass("Unsorted")}
+                    className="bg-yellow-400 text-white hover:bg-gray-500"
+                  >
+                    ⚠️ {unsortedFiles.length} to review
+                  </Button>
+                )
+              }
 
-        return (
-          <Button 
-            id={`badgeclass-${clsName}`} 
-            key={clsName} 
-            radius="xl" 
-            size="xs"
-            compact
-            onClick={() => setSelectedClass(clsName)}
-            className={`${nextColor} text-white hover:bg-gray-500`}
-          >
-            {totalImages} {clsName}
-          </Button>
-        );
-      })}
-  </div>
-</div>
-        <div
-          style={files.length === 0 || status.busy || !modelLoaded || classNum === 0 || status.progress !== 100 ? { visibility: "hidden" } : { visibility: "visible" }}
+{Object.entries(totalImagesPerClass)
+  .filter(([clsName, totalImages]) => totalImages > 0)
+  .map(([clsName, totalImages], index) => {
+    const displayName = clsName; 
+    const nextColor = getNextBgColor(); 
+    if (status.progress === 0) {
+      return null; // or return some placeholder component
+    }
+    return (
+      <Tooltip
+          key={index} // Add this line
+          label={selectedModel === "Other" ? convertName(displayName) : displayName}
+          color="dark"
+          withArrow
+          arrowPosition="center"
+          transitionProps={{ duration: 200 }}
         >
-        <Code color="teal">
-            {files.length} images sorted in {status.message}s ({(files.length / parseFloat(status.message)).toFixed(1)} images/s)
-        </Code>
+      <Box w={110}>
+      <Button 
+        id={`badgeclass-${clsName}`} 
+        fullWidth
+        radius="xl" 
+        size="xs"
+        compact
+        onClick={() => setSelectedClass(clsName)}
+        className={`${nextColor} text-white hover:bg-gray-500`}
+      >
+        {totalImages} {selectedModel === "Other" ? convertName(displayName) : displayName}
+      </Button>
+      </Box>
+      </Tooltip>
+    );
+  })}
+           
+          
         </div>
-        {/*  <div id="changesize" style={ { width: '160px' } } className="items-center">
-          <Slider
-            disabled
-            color="dark"
-            size="sm"
-            showLabelOnHover={false}
-            marks={[
-              { value: 1, label: 'sm' },
-              { value: 50, label: 'md' },
-              { value: 100, label: 'lg' },
-            ]}
-            defaultValue={50}
-            step={50}
-          />
-        </div>
-        */}
+        {!(files.length === 0 || status.busy || !modelLoaded || classNum === 0 || status.progress !== 100 || classFiles.length === 0) && ( 
+            <div
+              id="runinfo"
+              className='pl-3'
+              style={{ 
+                display: 'flex', // this will keep the div as a flex container
+                justifyContent: 'flex-end', // this will align children to the right
+              }}
+            >
+              <Code color="teal" style={{ whiteSpace: 'nowrap' }}>  {/* added whiteSpace: 'nowrap' */}
+                {files.length} images sorted in {status.message}s ({(files.length / parseFloat(status.message)).toFixed(1)} images/s)
+              </Code>
+            </div>
+          )}
+
       </header>
 
       <div className="flex flex-col lg:flex-row flex-grow h-full">
-        <nav className="bg-white">
-          <Drawer 
-            opened={opened} 
-            onClose={close} 
-            title="Model settings"
-            position="right"
-            size="xs"
-          >
-          <div id="modelsettings" className="grid grid-cols-1 gap-4">  
-            <div className="grid grid-cols-1 gap-4">
-              <DrawerContent/>
-              <InputFieldsComponent
-                onInputChange={onInputChange}
-                busy={status.busy}
-                modelLoaded={modelLoaded}
-              />
-            </div>
-          </div>
-        </Drawer>
-
-        </nav>
+              
         
         <main 
           id="photos" 
@@ -957,7 +1117,18 @@ export default function Home() {
         > 
         {files.length === 0 ? (
           <div className="w-full h-full flex items-center justify-center">
-            <FileLoader2 setNewFiles={setNewFiles} />
+          <div id="upload" className="flex justify-center">
+                <div
+                  className="justify-center flex rounded-lg px-6 py-4 text-center border-dotted border-2 border-gray-300"
+                >
+                    <Stack align="center" justify="center" h={100} w={180}>
+                      <ThemeIcon variant="default" color="gray">
+                        <IconDatabaseOff size="1rem" />
+                      </ThemeIcon>
+                      <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-green-500'>upload </Text>to add a new dataset.</Text>
+                      </Stack>
+                </div>
+              </div> 
           </div>
         ) : 
           selectedClass === 'All'
@@ -966,21 +1137,100 @@ export default function Home() {
                 duplicates={[]}
                 markDeleted={markDeleted}
                 moveToClass={startFileMoving}
+                unsortedImages={unsortedFiles}
+                removeFromUnsorted={removeFromUnsorted}
+                busy={status.busy}
+                modelLoaded={modelLoaded}
+                classNum={classNum}
+                progress={status.progress}
+                selectedClass={selectedClass}
+                selectedModel={selectedModel}
               />
             : filteredClasses.map(item => (
               <section key={item.name}>
                 {selectedClass !== 'All' && item.files.length === 0 &&
-                  <Text>No {item.name} images found</Text> 
-                }     
+                    <div className='flex justify-between w-full items-center'>
+                      <Text fz="sm">No{'\u00A0'}</Text>
+                      <Box w={100}>
+                      {selectedModel !== "Other" && (
+                        <Text fz="sm" truncate lineClamp={1}> 
+                          {item.name}
+                        </Text>
+                      )}
+                      </Box>
+                      <Text fz="sm">... images found</Text>
+                    </div>
+                  } 
+                  <Suspense fallback={<div><Loader color="gray" size="1rem" /></div>}>
                 <PhotoGallery
                   images={item.files}
                   duplicates={item.duplicates}
                   markDeleted={markDeleted}
                   moveToClass={startFileMoving}
+                  unsortedImages={unsortedFiles}
+                  removeFromUnsorted={removeFromUnsorted}
+                  busy={status.busy}
+                  modelLoaded={modelLoaded}
+                  classNum={classNum}
+                  progress={status.progress}
+                  selectedClass={selectedClass}
+                  selectedModel={selectedModel}
                 />
+                </Suspense>
               </section>
             ))}
-      </main>
+
+<div 
+  className='pl-5' 
+  style={{ 
+    minWidth: '455px', 
+    maxWidth: '455px', 
+    display: showSettings ? 'block' : 'none',
+  }}
+>
+<nav 
+  id="modelsettings" 
+  className="bg-white p-5 border border-gray-300 h-full rounded-lg" 
+>
+          <div  className="grid grid-cols-1 gap-4"> 
+              <div className="grid grid-cols-1 gap-4">
+                  {selectedModel === "Custom" ? (
+                      <>
+                          <div className='flex justify-between'> 
+                            <Title order={4}>Model settings</Title>
+                            <ActionIcon
+                              onClick={() => setShowSettings(false)} 
+                            >
+                              <IconX size="1rem"></IconX>
+                            </ActionIcon>
+                          </div>
+                          <DrawerContent/>
+                          <InputFieldsComponent
+                              onInputChange={onInputChange}
+                              busy={status.busy}
+                              modelLoaded={modelLoaded}
+                          />
+                      </>
+                  ) : selectedModel === "Other" ? (
+                    <>
+                    <div className='flex justify-between'> 
+                      <Title order={4}>Model settings</Title>
+                      <ActionIcon
+                        onClick={() => setShowSettings(false)} 
+                      >
+                        <IconX size="1rem"></IconX>
+                      </ActionIcon>
+                    </div>
+                    <DrawerContentGeneral/>
+                </>
+                  ) : null}
+              </div>
+          </div>
+      </nav>
+      </div>
+
+        
+        </main>
 
       </div>
       <footer 
@@ -999,12 +1249,42 @@ export default function Home() {
         onClose={() => setModalOpen(false)}
       />
       <ClassSelector
-        classes={classNames}
+        classes={classesToPass}
         onClassSet={moveToClass}
         file={movingFile}
         isOpen={showMoveModal}
         onClose={() => setShowMoveModal(false)}
+        selectedModel={selectedModel}
       />
     </div> 
   );
 }
+
+
+{/*  <div id="changesize" style={ { width: '160px' } } className="items-center">
+          <Slider
+            disabled
+            color="dark"
+            size="sm"
+            showLabelOnHover={false}
+            marks={[
+              { value: 1, label: 'sm' },
+              { value: 50, label: 'md' },
+              { value: 100, label: 'lg' },
+            ]}
+            defaultValue={50}
+            step={50}
+          />
+        </div>
+        */}
+
+          {/* 
+  <div id="dropdown" className="w-40 mr-2">
+    <Select
+      placeholder="Choose class"
+      value={selectedClass}
+      data={classOptions}
+      onChange={setSelectedClass}
+    />
+  </div>
+  */}

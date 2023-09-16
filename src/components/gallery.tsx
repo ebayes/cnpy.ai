@@ -5,12 +5,21 @@ import React, { useState } from "react";
 import { FileInfo } from "./fileInfo";
 import { ClassData } from "./classData";
 import GalleryItem from "./galleryItem";
+import { convertName } from "@/components/convertName";
 
 interface PhotoGalleryProps {
   images: FileInfo[];
   duplicates: ClassData[];
   markDeleted: (src: string) => void;
   moveToClass: (file: FileInfo | undefined) => void;
+  unsortedImages: FileInfo[];
+  removeFromUnsorted: (hash: string) => void;
+  busy: boolean;
+  modelLoaded: boolean;
+  classNum: number;
+  progress: number;
+  selectedClass: string;
+  selectedModel: string;
 }
 
 const PhotoGallery = (props: PhotoGalleryProps) => {
@@ -45,6 +54,14 @@ const PhotoGallery = (props: PhotoGalleryProps) => {
             openImage={openImage}
             markDeleted={props.markDeleted}
             moveToClass={props.moveToClass}
+            isUnsortedFile={props.unsortedImages.includes(image)}
+            removeFromUnsorted={props.removeFromUnsorted}
+            busy={props.busy}
+            modelLoaded={props.modelLoaded}
+            classNum={props.classNum}
+            progress={props.progress}
+            selectedClass={props.selectedClass}
+            selectedModel={props.selectedModel}
           />
         ))}
       </div>
@@ -72,20 +89,33 @@ const PhotoGallery = (props: PhotoGalleryProps) => {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedImage.classPredictions.map((prediction, index) => (
-                    <>
-                      {prediction.confidence > 0.05 && (
+                  {/* Create a map to hold the summed confidence values for each converted class name */}
+                  {(() => {
+                    const confidenceMap: { [key: string]: number } = {};
+
+                    selectedImage.classPredictions.forEach((prediction) => {
+                      if (prediction.confidence > 0.05) {
+                        let convertedClassName = prediction.class;
+                        if (props.selectedModel === "Other") {
+                          convertedClassName = convertName(prediction.class);
+                        }
+                        if (confidenceMap[convertedClassName]) {
+                          confidenceMap[convertedClassName] += prediction.confidence;
+                        } else {
+                          confidenceMap[convertedClassName] = prediction.confidence;
+                        }
+                      }
+                    });
+
+                    return Object.entries(confidenceMap).map(
+                      ([convertedClassName, totalConfidence], index) => (
                         <tr key={index}>
-                          <td className="text-sm py-1 text-left">
-                            {prediction.class}
-                          </td>
-                          <td className="text-sm py-1 text-right">
-                            {prediction.confidence.toFixed(2)}
-                          </td>
+                          <td className="text-sm py-1 text-left">{convertedClassName}</td>
+                          <td className="text-sm py-1 text-right">{totalConfidence.toFixed(2)}</td>
                         </tr>
-                      )}
-                    </>
-                  ))}
+                      )
+                    );
+                  })()}
                 </tbody>
               </table>
             )}

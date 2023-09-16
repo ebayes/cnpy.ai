@@ -7,4 +7,6 @@ export interface FileInfo {
   embedding: number[] | null;
   toDelete: boolean;
   classPredictions: ClassificationPrediction[];
+  newClass?: string;
+  color?: string;
 }

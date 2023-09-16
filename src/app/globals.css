@@ -26,3 +26,17 @@
       background-position: 0% 50%;
     }
   }
+
+  #leftbuttons::-webkit-scrollbar {
+    width: 4px; /* Adjust scrollbar width */
+    height: 4px; /* Adjust scrollbar height */
+  }
+  
+  #leftbuttons::-webkit-scrollbar-thumb {
+    background: #888; /* Color of the scroll thumb */
+    border-radius: 4px; /* Radius for the scroll thumb */
+  }
+  
+  #leftbuttons::-webkit-scrollbar-thumb:hover {
+    background: #919191; /* Color of the scroll thumb on hover */
+  }
