@@ -52,8 +52,8 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(true);
   const [showNotification, setShowNotification] = useState(false);
   const handleSubmit = () => {
-    logFeedback(feedbackName, feedbackEmail, feedbackMessage);
-    setShowNotification(true);
+    // logFeedback(feedbackName, feedbackEmail, feedbackMessage);
+    // setShowNotification(true);
   };
   const [feedbackName, setFeedbackName] = useState('');
   const [feedbackEmail, setFeedbackEmail] = useState('');
@@ -333,7 +333,7 @@ export default function Home() {
     });
       
     // logrun in supabase
-    logRun(selectedModel, imageCount, classesCount, elapsed);
+    // logRun(selectedModel, imageCount, classesCount, elapsed);
   };
 
   const processFiles2 = async (
@@ -433,7 +433,7 @@ export default function Home() {
     });
 
     // logrun in supabase
-    logRun(selectedModel, imageCount, classesCount, elapsed);
+    // logRun(selectedModel, imageCount, classesCount, elapsed);
   };
 
   const processResult = (

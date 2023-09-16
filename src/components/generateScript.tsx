@@ -133,5 +133,5 @@ export const generateScript = (
     const elapsed = parseFloat(status.message); // assuming status.message is the elapsed time in string format
 
     // Call logFinal
-    logFinal(selectedModel, imageCount, finalCount, elapsed);
+    // logFinal(selectedModel, imageCount, finalCount, elapsed);
   };

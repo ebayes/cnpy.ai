@@ -1,5 +1,7 @@
 // supabase.tsx
 
+{/* 
+
 import { createClient } from "@supabase/supabase-js";
 import { convertName } from "@/components/convertName";
 
@@ -108,3 +110,5 @@ export async function logFeedback(
     }
   }
 }
+
+*/}
