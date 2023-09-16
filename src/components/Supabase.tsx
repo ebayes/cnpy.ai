@@ -3,10 +3,11 @@
 import { createClient } from "@supabase/supabase-js";
 import { convertName } from "@/components/convertName";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  // process.env.NEXT_PUBLIC_SUPABASE_PRIVATE_KEY,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+);
 
 async function getIpAddress() {
   const response = await fetch('https://api.ipify.org?format=json');

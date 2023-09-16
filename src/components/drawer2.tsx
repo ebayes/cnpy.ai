@@ -63,13 +63,13 @@ function DrawerContentGeneral() {
           <Text fz="sm" fw={500}>Description:</Text>
           <div className='w-72'>
             <Text fz="sm" ta="right" variant="light">
-              Classes are filtered from<a
+              Classes are filtered from <a
                 href="https://deeplearning.cms.waikato.ac.nz/user-guide/class-maps/IMAGENET/"
                 target="_blank"
                 className="hover:text-blue-500 underline"
               >
                 MobileNet
-              </a> classes. Warning: some may repeat.
+              </a> classes.
             </Text>
           </div>
         </div>
