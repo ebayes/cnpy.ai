@@ -447,7 +447,7 @@ export default function Home() {
     if (result.length === 0) {
       return;
     }
-    if (result[0].confidence < 0.5) {
+    if (result[0].confidence < 0.3) { // 0.5
       return;
     }
     file.embedding = embedding;
@@ -477,7 +477,7 @@ export default function Home() {
     if (result.length === 0) {
       return;
     }
-    if (result[0].confidence < 0.5) {
+    if (result[0].confidence < 0.3) { // 0.5
       return;
     }
     const foundClass = result[0].class;
@@ -1238,7 +1238,8 @@ export default function Home() {
         className="bg-[#F7F3EC] border-t-[1px] border-[#E4E1D8] px-5 py-3 flex items-center justify-center h-[3rem]"
       >
         <Text fz="sm" ta="center">
-          Built by <Anchor target="_blank" href="https://www.general-purpose.io" color='black'>General Purpose</Anchor>; powered by <Anchor color='black' target="_blank" href="https://github.com/visheratin/web-ai">WebAI</Anchor>.
+          {/* Built by <Anchor target="_blank" href="https://www.general-purpose.io" color='black'>General Purpose</Anchor>; */}
+          Powered by <Anchor color='black' target="_blank" href="https://github.com/visheratin/web-ai">WebAI</Anchor>.
         </Text>
       </footer>
 
