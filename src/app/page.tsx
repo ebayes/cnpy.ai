@@ -1117,19 +1117,19 @@ export default function Home() {
         > 
         {files.length === 0 ? (
           <div className="w-full h-full flex items-center justify-center">
-          <div id="upload" className="flex justify-center">
-                <div
-                  className="justify-center flex rounded-lg px-6 py-4 text-center border-dotted border-2 border-gray-300"
-                >
-                    <Stack align="center" justify="center" h={100} w={180}>
-                      <ThemeIcon variant="default" color="gray">
-                        <IconDatabaseOff size="1rem" />
-                      </ThemeIcon>
-                      <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-green-500'>upload </Text>to add a new dataset.</Text>
-                      </Stack>
-                </div>
-              </div> 
-          </div>
+          <div id="upload" className="flex justify-center items-center h-full">
+            <div
+              className="flex justify-center items-center rounded-lg px-6 py-4 text-center border-dotted border-2 border-gray-300"
+            >
+              <Stack align="center" justify="center" h={100} w={180}>
+                <ThemeIcon variant="default" color="gray">
+                  <IconDatabaseOff size="1rem" />
+                </ThemeIcon>
+                <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-green-500'>upload </Text>to add a new dataset.</Text>
+              </Stack>
+            </div>
+          </div> 
+        </div>
         ) : 
           selectedClass === 'All'
             ? <PhotoGallery
