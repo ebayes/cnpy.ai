@@ -12,7 +12,7 @@ import { FileInfo } from "@/components/fileInfo";
 import { generateScript } from "@/components/generateScript";
 import { ClassData } from "@/components/classData";
 import { convertName } from "@/components/convertName";
-import { logRun, logFeedback, logFinal } from "@/components/Supabase";
+// import { logRun, logFeedback, logFinal } from "@/components/Supabase";
 import {
   MultimodalModel,
   ZeroShotClassificationModel,

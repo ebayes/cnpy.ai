@@ -1,4 +1,4 @@
-import { logFinal } from "@/components/Supabase";
+// import { logFinal } from "@/components/Supabase";
 import { FileInfo } from "@/components/fileInfo";
 import { ClassData } from "@/components/classData";
 
