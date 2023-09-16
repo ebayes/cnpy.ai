@@ -730,7 +730,7 @@ export default function Home() {
         <Tooltip
           multiline
           width={200}
-          label="Canopy is a privacy-preserving tool for conservationists to sort camera trap data using machine learning without any data leaving their browser."
+          label="Canopy is a privacy-preserving tool for conservationists to sort camera trap data using machine learning without any data leaving their browser. Currently, it works best with datasets under 500 images."
           color="dark"
           withArrow
           arrowPosition="center"
@@ -745,6 +745,7 @@ export default function Home() {
         </ThemeIcon >
         </Tooltip>
 
+        {/* 
         <Popover width={300} trapFocus position="bottom" withArrow shadow="md" onClose={() => setShowNotification(false)}>
         <Popover.Target>
           <Tooltip          
@@ -798,6 +799,8 @@ export default function Home() {
           </Button>
         </Popover.Dropdown>
       </Popover>
+      */}
+
 </div>
 
       </header>
