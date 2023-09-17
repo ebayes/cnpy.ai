@@ -20,9 +20,6 @@ import {
 } from "@visheratin/web-ai/multimodal";
 import { ClassificationPrediction, ImageModel } from "@visheratin/web-ai/image";
 const FileLoader = React.lazy(() => import("@/components/fileLoader"));
-const FileLoader2 = React.lazy(() => import("@/components/fileLoader2"));
-import FooterComponent from "@/components/footer";
-
 import { Select, ActionIcon, ThemeIcon, TextInput, Textarea, Text, Title, Loader, Button, Badge, Tooltip, Slider, Avatar, Code, Anchor, Box, Flex, Popover, Stack } from '@mantine/core';
 import { useDisclosure } from '@mantine/hooks';
 import InputFieldsComponent from "@/components/classes";
@@ -703,7 +700,7 @@ export default function Home() {
         </div>
         <footer className="bg-[#F7F3EC] border-t-[1px] border-[#E4E1D8] px-5 py-3 flex items-center justify-center h-[3rem]">
                   <Text fz="sm" ta="center">
-          Built by General Purpose; powered by WebAI.
+          Powered by WebAI.
         </Text>
         </footer>
       </div>
@@ -727,10 +724,11 @@ export default function Home() {
           height={120}
         />
         <div className="flex items-center justify-end">
+          {/* 
         <Tooltip
           multiline
           width={200}
-          label="Canopy is a privacy-preserving tool for conservationists to sort camera trap data using machine learning without any data leaving their browser. Currently, it works best with datasets under 500 images."
+          label="Canopy is a privacy-preserving tool for conservationists to sort camera trap data using machine learning without any data leaving their browser. It works best with datasets under 500 images."
           color="dark"
           withArrow
           arrowPosition="center"
@@ -744,6 +742,38 @@ export default function Home() {
           <IconHelpCircle size="1rem"/>
         </ThemeIcon >
         </Tooltip>
+        */}
+
+        
+        <Popover width={300} trapFocus position="bottom" withArrow shadow="md" >
+        <Popover.Target>
+          <Tooltip          
+            label="Click for more info."
+            color="dark"
+            withArrow
+            arrowPosition="center"
+            transitionProps={{ duration: 200 }}
+          >
+          <ActionIcon 
+            size="lg"
+            variant="transparent"
+            className="text-black flex items-center justify-center"
+          >
+            <IconHelpCircle size="1rem"/>
+          </ActionIcon>
+          </Tooltip>
+        </Popover.Target>
+        <Popover.Dropdown className='gap-3' sx={(theme) => ({ background: theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white, display: 'flex', flexDirection: 'column', alignItems: 'flex-end', width: '100%' })}>
+          <Text 
+            size="sm" 
+            style={{ width: '100%' }} 
+          > 
+            Canopy is a privacy-preserving tool that helps conservationists sort camera trap data using machine learning without any data leaving the browser. It works best with datasets under 500 images. A test dataset can be found <Anchor td="underline" color='black' target="_blank" href="https://drive.google.com/drive/folders/14LSwjlZqYIyje114y_Tq5L82Re9HWulo?usp=sharing">here</Anchor>.
+          </Text>
+          
+        </Popover.Dropdown>
+      </Popover>
+      
 
         {/* 
         <Popover width={300} trapFocus position="bottom" withArrow shadow="md" onClose={() => setShowNotification(false)}>
