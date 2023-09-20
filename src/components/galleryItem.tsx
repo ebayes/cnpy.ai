@@ -32,7 +32,7 @@ const GalleryItem = (props: GalleryItemProps) => {
       
       <div 
   key={props.image.src} 
-  className="cursor-pointer relative"
+  className="cursor-pointer relative pb-1"
 >
   <Image
     width={160}
@@ -52,7 +52,7 @@ const GalleryItem = (props: GalleryItemProps) => {
 {props.isUnsortedFile && (
   <div 
     id="alert" 
-    className="absolute top-0 right-0 flex items-center justify-center bg-yellow-400" 
+    className="absolute top-0 right-0 flex items-center justify-center bg-[#FAEECD]" 
     style={{ 
       visibility: !props.modelLoaded || props.progress !== 100 ? 'hidden' : 'visible', 
       width: '1.5rem',
@@ -61,7 +61,7 @@ const GalleryItem = (props: GalleryItemProps) => {
       borderTopRightRadius: '5px',
     }}
   >
-    <Text fz="xs" c="white">⚠️</Text>
+    <Text fz="xs" c="#905526">⚠️</Text>
   </div>
 )}
 </div>
@@ -71,68 +71,72 @@ const GalleryItem = (props: GalleryItemProps) => {
     {props.image.name}
   </Text>
 
-  <div className="flex">
+  <div className="flex gap-1">
 
 
-    {props.image.classPredictions && props.image.classPredictions.length > 0 && props.image.classPredictions[0].class && (
+    {!props.isUnsortedFile && props.image.classPredictions && props.image.classPredictions.length > 0 && props.image.classPredictions[0].class && (
   <>
     <button
+      id="edit"
       onClick={() => {props.moveToClass(props.image);}}
-      className="w-5 h-5 flex items-center justify-center rounded-full"
+      className="w-5 h-5 flex items-center justify-center rounded-sm bg-[#F2F2F5]" 
     >
-      <IconEdit size="0.8rem"/>
+      <IconEdit size="0.7rem" color="#60646C"/>
     </button>
   </>
 )}
 
 
-    <button
-      onClick={() => {
-        if (props.markDeleted) props.markDeleted(props.image.hash);
-      }}
-      className={
-        props.image.toDelete
-          ? "w-5 h-5 flex items-center justify-center rounded-full"
-          : "w-5 h-5 flex items-center justify-center rounded-full"
-      }
-    >
-      {props.image.toDelete ? (
-        <IconRestore color="green" size="0.8rem"/>
-      ) : (
-        <IconTrash color="red" size="0.8rem"/>
-      )}
-    </button>
-  </div>
-</div>
-<div className="flex justify-between items-center w-full">
-
-{props.image.classPredictions && props.image.classPredictions.length > 0 && props.image.classPredictions[0].class && (
-  <Badge id="badgeclass" key={0} size="xs"  className="mr-2">
-    {props.selectedModel === "Other" ? convertName(props.image.classPredictions[0].class) : props.image.classPredictions[0].class}
-  </Badge>
-)}
-  
-{props.isUnsortedFile && (
+{props.isUnsortedFile ? (
   <div 
     id="yesno" 
-    className="flex justify-between items-center bg-gray-200 rounded-lg" 
+    className="flex justify-between items-center rounded-lg gap-1" 
     style={{ 
       visibility: !props.modelLoaded || props.progress !== 100 ? 'hidden' : 'visible', 
     }} // style={{ visibility: props.busy || !props.modelLoaded || props.classNum === 0 || props.progress !== 100 ? 'hidden' : 'visible' }}
   >
 <button 
-  className="w-5 h-5 flex items-center justify-center"
+  className="w-5 h-5 flex items-center justify-center bg-[#30A46C] rounded-sm"
   onClick={() => {
     props.removeFromUnsorted(props.image.hash);
   }}
 >
-  <IconCheck color="green" size="0.8rem"/>
+  <IconCheck color="white" size="0.8rem"/>
 </button>
-    <button className="w-5 h-5 flex items-center justify-center" onClick={() => {props.moveToClass(props.image);}}>
-      <IconX color="red" size="0.8rem"/>
+    <button className="w-5 h-5 flex items-center justify-center bg-[#E5484D] rounded-sm" onClick={() => {props.moveToClass(props.image);}}>
+      <IconX color="white" size="0.8rem"/>
     </button>
   </div>
+) : (
+    <button
+      id="editdelete"
+      onClick={() => {
+        if (props.markDeleted) props.markDeleted(props.image.hash);
+      }}
+      className={
+        props.image.toDelete
+          ? "w-5 h-5 flex items-center justify-center rounded-sm bg-[#E5484D]"
+          : "w-5 h-5 flex items-center justify-center rounded-sm bg-[#E5484D]"
+      }
+    >
+      {props.image.toDelete ? (
+        <IconRestore color="white" size="0.7rem"/>
+      ) : (
+        <IconTrash color="white" size="0.7rem"/>
+      )}
+    </button>
 )}
+  </div>
+</div>
+<div className="flex justify-between items-center w-full pt-1">
+
+{props.image.classPredictions && props.image.classPredictions.length > 0 && props.image.classPredictions[0].class && (
+  <Badge id="badgeclass" key={0} size="xs"  className="text-[#60646C] bg-[#EBEBEF]">
+    {props.selectedModel === "Other" ? convertName(props.image.classPredictions[0].class) : props.image.classPredictions[0].class}
+  </Badge>
+)}
+  
+
 
 
 </div>

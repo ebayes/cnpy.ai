@@ -28,6 +28,7 @@ import DrawerContentGeneral from "@/components/drawer2";
 import { SegmentationModel, ModelType } from "@visheratin/web-ai/image"
 import { SessionParams } from "@visheratin/web-ai";
 import { IconArrowBarLeft, IconCheck, IconBrain, IconEdit, IconHelpCircle, IconMessageCircle2, IconPlayerPlay, IconPlayerStop, IconPower, IconTerminal2, IconUpload, IconX, IconDatabaseOff } from '@tabler/icons-react';
+import { ShadowIcon } from '@radix-ui/react-icons'
 
 interface NavbarComponentProps {
   onInputChange: (inputs: string[]) => void;
@@ -200,24 +201,25 @@ export default function Home() {
   };
 
   const bgColors = [
-    "bg-red-300",
-    "bg-blue-300",
-    "bg-green-300",
-    "bg-indigo-300",
-    "bg-purple-300",
-    "bg-pink-300",
-    "bg-gray-300",
-    "bg-teal-300",
-    "bg-lime-300",
-    "bg-rose-300",
-    "bg-cyan-300",
-    "bg-orange-300",
-    "bg-amber-300",
-    "bg-emerald-300",
-    "bg-violet-300",
-    "bg-sky-300",
-    "bg-fuchsia-300"
+    "bg-[#E7EBF6]",
+    "bg-[#F6E6E6]",
+    "bg-[#E0F0E5]",
+    "bg-[#D9F0F6]",
+    "bg-[#EFE8E5]",
+    "bg-[#F5E6EA]",
+    "bg-[#F3E6F3]",
+    "bg-[#E4EDF6]",
+    "bg-[#DEF0F2]",
+    "bg-[#DEF0EC]",
+    "bg-[#F7E5CD]",
+    "bg-[#EFE8E1]",
+    "bg-[#D9F0F6]",
+    "bg-[#D4F2EA]",
+    "bg-[#E4F1D1]",
+    "bg-[#F7F1BE]",
+    "bg-[#F7EBC8]"
   ];
+  
   
   let colorIndex = 0;
   
@@ -673,36 +675,42 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="flex flex-col min-h-screen">
-        <header 
-          id="header" 
-          style={{backgroundColor: "#F7F3EC", borderBottom: "1px solid #E4E1D8"}}
-          className="px-5 py-3 flex justify-between h-[3.5rem]"
-        >
-          <Image 
+         <header 
+        id="header" 
+        style={{backgroundColor: "#F2F2F5", borderBottom: "1px solid #DDDDE3", height: '55px' }}
+        className="px-5 py-3 flex justify-between"
+      >
+        <div className="flex items-center justify-end gap-2 pl-1">
+        <ShadowIcon width={17} height={17} />
+
+        <Image 
           src="/icons/logo.png" 
           alt="Logo" 
           className="object-contain"
-          width={120}
-          height={120}
+          width={85}
+          height={85}
         />
-        <div className="flex items-center justify-end">
-          
         </div>
+        
+        
+          
 
         </header>
         <header 
           id="subheader" 
-          style={{backgroundColor: "#F9F8F5", borderBottom: "1px solid #E4E1D8"}}
+          style={{backgroundColor: "#FCFCFD", borderBottom: "1px solid #E4E1D8"}}
           className="px-5 py-2 h-[3.5rem] flex justify-between"
         ></header>
         <div className='flex-grow w-full flex items-center justify-center'>
           <Loader color="gray" size="1rem" />
         </div>
-        <footer className="bg-[#F7F3EC] border-t-[1px] border-[#E4E1D8] px-5 py-3 flex items-center justify-center h-[3rem]">
-                  <Text fz="sm" ta="center">
-          Powered by WebAI.
-        </Text>
-        </footer>
+        <footer 
+        id="footer" 
+        className="bg-[#F2F2F5] border-t-[1px] border-[#DDDDE3] px-5 py-3 flex items-center justify-center"
+        style={{ height: '55px' }}
+      >
+
+      </footer>
       </div>
     );
   }
@@ -713,16 +721,20 @@ export default function Home() {
 
       <header 
         id="header" 
-        style={{backgroundColor: "#F7F3EC", borderBottom: "1px solid #E4E1D8"}}
-        className="px-5 py-3 flex justify-between h-[3.5rem]"
+        style={{backgroundColor: "#F2F2F5", borderBottom: "1px solid #DDDDE3", height: '55px' }}
+        className="px-5 py-3 flex justify-between"
       >
+        <div className="flex items-center justify-end gap-2 pl-1">
+        <ShadowIcon width={17} height={17} />
+
         <Image 
           src="/icons/logo.png" 
           alt="Logo" 
           className="object-contain"
-          width={120}
-          height={120}
+          width={85}
+          height={85}
         />
+        </div>
         <div className="flex items-center justify-end">
           {/* 
         <Tooltip
@@ -836,7 +848,7 @@ export default function Home() {
       </header>
       <header 
         id="subheader" 
-        style={{backgroundColor: "#F9F8F5", borderBottom: "1px solid #E4E1D8"}}
+        style={{backgroundColor: "#FCFCFD", borderBottom: "1px solid #DDDDE3"}}
         className="px-5 py-2 h-[3.5rem] flex justify-between"
       >
         <div id="uploadbuttons" className='flex gap-2'>
@@ -871,7 +883,7 @@ export default function Home() {
               progress: 0
             })); 
           }}
-          className="bg-red-500 text-white hover:bg-red-600 flex items-center justify-center"
+          className="bg-[#E5484D] text-white hover:bg-red-600 flex items-center justify-center"
         >
           <IconX size="1rem"/>
         </ActionIcon >
@@ -892,7 +904,7 @@ export default function Home() {
       <Button 
         rightIcon={<IconHelpCircle size="1rem" />}
         onClick={() => setShowSettings(true)}
-        className="bg-blue-100 text-blue-400 hover:text-blue-600 hover:bg-blue-300  flex items-center justify-center"
+        className="bg-[#EDF1FD] text-[#3E63DD] hover:bg-[#AEC0F5]  flex items-center justify-center"
       >
         Model
       </Button>
@@ -938,7 +950,7 @@ export default function Home() {
                 loadOther();
               }
             }}
-            className="bg-orange-500 text-white hover:bg-orange-600  flex items-center justify-center"
+            className="bg-orange-400 text-white hover:bg-orange-500  flex items-center justify-center"
           >
             {status.busy ? <Loader color="white" size="1rem" /> : <IconPower size="1rem"/>}
           </ActionIcon>
@@ -964,7 +976,7 @@ export default function Home() {
                 message: "Reset progress",
               });
             }}
-            className="bg-red-500 text-white hover:bg-red-600  flex items-center justify-center"
+            className="bg-[#E5484D] text-white hover:bg-red-600  flex items-center justify-center"
           >
             <IconPower size="1rem"/>
           </ActionIcon>
@@ -985,7 +997,7 @@ export default function Home() {
           setClassFiles([]);
           process();
         }}
-        className="bg-green-500 text-white hover:bg-emerald-600 flex items-center justify-center"
+        className="bg-[#30A46C] text-white hover:bg-emerald-700 flex items-center justify-center"
       >
         <IconPlayerPlay size="1rem"/>
       </ActionIcon>
@@ -1009,7 +1021,7 @@ export default function Home() {
             console.log("stopping");
             stopProcessing();
           }}
-          className="bg-red-500 text-white hover:bg-red-600  flex items-center justify-center"
+          className="bg-[#E5484D] text-white hover:bg-red-600  flex items-center justify-center"
         >
           <IconPlayerStop size="1rem"/>
         </ActionIcon>
@@ -1036,7 +1048,7 @@ export default function Home() {
             setWinScript, 
             setModalOpen
           )}
-          className="bg-green-500 text-white hover:bg-emerald-600  flex items-center justify-center"
+          className="bg-[#30A46C] text-white hover:bg-emerald-700  flex items-center justify-center"
         >
           <IconTerminal2 size="1rem"/>
         </ActionIcon >
@@ -1066,7 +1078,7 @@ export default function Home() {
                 size="xs"
                 compact
                 onClick={() => setSelectedClass("All")}
-                className={`bg-gray-400 text-white hover:bg-gray-500`}
+                className={`bg-[#E9E9EC] text-[#575B64] hover:bg-gray-300`}
               >
                 {files.length} Images
               </Button>
@@ -1080,7 +1092,7 @@ export default function Home() {
                     size="xs"
                     compact
                     onClick={() => setSelectedClass("Unsorted")}
-                    className="bg-yellow-400 text-white hover:bg-gray-500"
+                    className="bg-[#FAEECD] text-[#905526] hover:bg-gray-300"
                   >
                     ⚠️ {unsortedFiles.length} to review
                   </Button>
@@ -1112,7 +1124,7 @@ export default function Home() {
         size="xs"
         compact
         onClick={() => setSelectedClass(clsName)}
-        className={`${nextColor} text-white hover:bg-gray-500`}
+        className={`${nextColor} text-[#575B64] hover:bg-gray-300`}
       >
         {totalImages} {selectedModel === "Other" ? convertName(displayName) : displayName}
       </Button>
@@ -1132,7 +1144,7 @@ export default function Home() {
                 justifyContent: 'flex-end', // this will align children to the right
               }}
             >
-              <Code color="teal" style={{ whiteSpace: 'nowrap' }}>  {/* added whiteSpace: 'nowrap' */}
+              <Code className="bg-[#EDF1FD] text-[#3E63DD]" style={{ whiteSpace: 'nowrap' }}>  {/* added whiteSpace: 'nowrap' */}
                 {files.length} images sorted in {status.message}s ({(files.length / parseFloat(status.message)).toFixed(1)} images/s)
               </Code>
             </div>
@@ -1158,7 +1170,7 @@ export default function Home() {
                 <ThemeIcon variant="default" color="gray">
                   <IconDatabaseOff size="1rem" />
                 </ThemeIcon>
-                <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-green-500'>upload </Text>to add a new dataset.</Text>
+                <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-[#3E63DD]'>upload </Text>to add a new dataset.</Text>
               </Stack>
             </div>
           </div> 
@@ -1268,7 +1280,8 @@ export default function Home() {
       </div>
       <footer 
         id="footer" 
-        className="bg-[#F7F3EC] border-t-[1px] border-[#E4E1D8] px-5 py-3 flex items-center justify-center h-[3rem]"
+        className="bg-[#F2F2F5] border-t-[1px] border-[#DDDDE3] px-5 py-3 flex items-center justify-center"
+        style={{ height: '55px' }}
       >
         <Text fz="sm" ta="center">
           {/* Built by <Anchor target="_blank" href="https://www.general-purpose.io" color='black'>General Purpose</Anchor>; */}

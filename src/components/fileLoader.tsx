@@ -65,7 +65,7 @@ const FileLoader = (props: FileLoaderProps) => {
     <div id="upload" className="flex justify-center">
       <div
         {...getRootProps()}
-        className="bg-green-500 justify-center w-40 text-sm text-white hover:bg-green-600 flex rounded-md px-3 py-2 text-center hover:bg-gray-200 cursor-pointer transition-all duration-200"
+        className="bg-[#3E63DD] justify-center w-32 text-sm text-white hover:bg-[#3451B2] flex rounded-md px-3 py-2 text-center cursor-pointer transition-all duration-200"
       >
         <input
           {...getInputProps()}
