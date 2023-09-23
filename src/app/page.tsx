@@ -881,7 +881,8 @@ export default function Home() {
             setStatus(prevStatus => ({
               ...prevStatus,
               progress: 0
-            })); 
+            }));
+            setSelectedClass("All"); 
           }}
           className="bg-[#E5484D] text-white hover:bg-red-600 flex items-center justify-center"
         >
