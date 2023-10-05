@@ -15,3 +15,7 @@ Features:
 ## Thank yous
 
 Canopy has been built using [Web AI](https://github.com/visheratin/web-ai), a TypeScript library that allows you to run modern deep learning models directly in the web browser. Special thanks to [visheratin](https://github.com/visheratin) who built WebAI and has provided ad hoc assistance.
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
