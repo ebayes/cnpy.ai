@@ -18,4 +18,4 @@ Canopy has been built using [Web AI](https://github.com/visheratin/web-ai), a Ty
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+[Mozilla Public License (MPL) version 2.0 (#MPL-2.0)](LICENSE)​, which is both a free software license according to [FSF](https://www.gnu.org/licenses/license-list.html) and an open source license according to [OSI](https://opensource.org/licenses/category). 
