@@ -12,7 +12,7 @@ import { FileInfo } from "@/components/fileInfo";
 import { generateScript } from "@/components/generateScript";
 import { ClassData } from "@/components/classData";
 import { convertName } from "@/components/convertName";
-// import { logRun, logFeedback, logFinal } from "@/components/Supabase";
+import { createClient } from "@supabase/supabase-js";
 import {
   MultimodalModel,
   ZeroShotClassificationModel,
@@ -53,6 +53,7 @@ export default function Home() {
     // logFeedback(feedbackName, feedbackEmail, feedbackMessage);
     // setShowNotification(true);
   };
+  const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!);
   const [feedbackName, setFeedbackName] = useState('');
   const [feedbackEmail, setFeedbackEmail] = useState('');
   const [feedbackMessage, setFeedbackMessage] = useState('');
@@ -81,6 +82,21 @@ export default function Home() {
   const [showSettings, setShowSettings] = useState(false);
 
   const [otherValues, setOtherValues] = useState<string[]>([]);
+
+  const logRun = async (selectedModel: string, imageCount: number, classesCount: Record<string, number>, elapsed: number) => {
+    const { error } = await supabaseAdmin
+      .from('runs')
+      .insert({ 
+        selected_model: selectedModel,
+        total_images: imageCount, 
+        classes_count: classesCount,
+        elapsed: elapsed
+      });
+    
+    if (error) {
+      console.error('Error logging run:', error);
+    }
+  };
 
   const removeFromUnsorted = (hash: string) => {
     setUnsortedFiles((prevFiles: FileInfo[]) => {
@@ -331,8 +347,8 @@ export default function Home() {
       classesCount[classData.name] = classData.files.length;
     });
       
-    // logrun in supabase
-    // logRun(selectedModel, imageCount, classesCount, elapsed);
+    
+    logRun(selectedModel, imageCount, classesCount, elapsed);
   };
 
   const processFiles2 = async (
@@ -431,8 +447,8 @@ export default function Home() {
       classesCount[classData.name] = classData.files.length;
     });
 
-    // logrun in supabase
-    // logRun(selectedModel, imageCount, classesCount, elapsed);
+
+    logRun(selectedModel, imageCount, classesCount, elapsed);
   };
 
   const processResult = (
@@ -640,7 +656,7 @@ export default function Home() {
     }, 2000);
   };
 
-  const process = () => {
+  const processFilesWithPower = () => {
     // clear classes
     const power = 4;
     if (CLIPModel) {
@@ -996,7 +1012,7 @@ export default function Home() {
         disabled={!modelLoaded || classNum === 0 || status.busy}
         onClick={() => {
           setClassFiles([]);
-          process();
+          processFilesWithPower();
         }}
         className="bg-[#30A46C] text-white hover:bg-emerald-700 flex items-center justify-center"
       >
