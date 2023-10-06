@@ -780,7 +780,7 @@ export default function Home() {
             size="sm" 
             style={{ width: '100%' }} 
           > 
-            Canopy is a privacy-preserving tool that helps conservationists sort camera trap data using machine learning without any data leaving the browser. It works best with datasets under 500 images. A test dataset can be found <Anchor td="underline" color='black' target="_blank" href="https://drive.google.com/drive/folders/14LSwjlZqYIyje114y_Tq5L82Re9HWulo?usp=sharing">here</Anchor>.
+            Canopy is a privacy-preserving tool that helps conservationists sort camera trap data using machine learning without any data leaving the browser. It works best with datasets under 500 images. A test dataset can be found <Anchor td="underline" color='black' target="_blank" href="https://drive.google.com/drive/folders/14LSwjlZqYIyje114y_Tq5L82Re9HWulo?usp=sharing">here</Anchor>. Instructions can be found <Anchor td="underline" color='black' target="_blank" href="https://docs.google.com/document/d/1KBIUssYTRrHIpuhtfsvNKtVEbW9HQ5fTt7pfAbrc0Dc/edit?usp=sharing">here</Anchor>.
           </Text>
           
         </Popover.Dropdown>
@@ -849,7 +849,7 @@ export default function Home() {
       <header 
         id="subheader" 
         style={{backgroundColor: "#FCFCFD", borderBottom: "1px solid #DDDDE3"}}
-        className="px-5 py-2 h-[3.5rem] flex justify-between"
+        className="px-5 py-2 h-[3.5rem] flex justify-between "
       >
         <div id="uploadbuttons" className='flex gap-2'>
           <div style={{ height: '35px' }}>
@@ -1163,19 +1163,19 @@ export default function Home() {
         > 
         {files.length === 0 ? (
           <div className="w-full h-full flex items-center justify-center">
-          <div id="upload" className="flex justify-center items-center h-full">
-            <div
-              className="flex justify-center items-center rounded-lg px-6 py-4 text-center border-dotted border-2 border-gray-300"
-            >
-              <Stack align="center" justify="center" h={100} w={180}>
-                <ThemeIcon variant="default" color="gray">
-                  <IconDatabaseOff size="1rem" />
-                </ThemeIcon>
-                <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-[#3E63DD]'>upload </Text>to add a new dataset.</Text>
-              </Stack>
-            </div>
-          </div> 
-        </div>
+  <div id="upload" className="flex justify-center items-center">
+    <div
+      className="flex justify-center items-center rounded-lg px-6 py-4 text-center border-dotted border-2 border-gray-300"
+    >
+      <Stack align="center" justify="center" h={100} w={180}>
+        <ThemeIcon variant="default" color="gray">
+          <IconDatabaseOff size="1rem" />
+        </ThemeIcon>
+        <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-[#3E63DD]'>upload </Text>to add a new dataset.</Text>
+      </Stack>
+    </div>
+  </div> 
+</div>
         ) : 
           selectedClass === 'All'
             ? <PhotoGallery
