@@ -88,7 +88,9 @@ export default function Home() {
         selected_model: selectedModel,
         total_images: imageCount, 
         classes_count: classesCount,
-        elapsed: elapsed
+        elapsed: elapsed,
+        type: "logrun",
+        rate: imageCount / elapsed
       });
     
     if (error) {
@@ -794,7 +796,7 @@ export default function Home() {
             size="sm" 
             style={{ width: '100%' }} 
           > 
-            Canopy is a privacy-preserving tool that helps conservationists sort camera trap data using machine learning without any data leaving the browser. It works best with datasets under 500 images. A test dataset can be found <Anchor td="underline" color='black' target="_blank" href="https://drive.google.com/drive/folders/14LSwjlZqYIyje114y_Tq5L82Re9HWulo?usp=sharing">here</Anchor>. Instructions can be found <Anchor td="underline" color='black' target="_blank" href="https://docs.google.com/document/d/1KBIUssYTRrHIpuhtfsvNKtVEbW9HQ5fTt7pfAbrc0Dc/edit?usp=sharing">here</Anchor>.
+            Canopy is a privacy-preserving tool that helps conservationists sort camera trap data using machine learning without any images leaving the browser. It works best with datasets under 500 images. A test dataset can be found <Anchor td="underline" color='black' target="_blank" href="https://drive.google.com/drive/folders/14LSwjlZqYIyje114y_Tq5L82Re9HWulo?usp=sharing">here</Anchor> and instructions can be found <Anchor td="underline" color='black' target="_blank" href="https://docs.google.com/document/d/1KBIUssYTRrHIpuhtfsvNKtVEbW9HQ5fTt7pfAbrc0Dc/edit?usp=sharing">here</Anchor>.
           </Text>
           
         </Popover.Dropdown>

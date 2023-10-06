@@ -1,6 +1,26 @@
 // import { logFinal } from "@/components/Supabase";
 import { FileInfo } from "@/components/fileInfo";
 import { ClassData } from "@/components/classData";
+import { createClient } from "@supabase/supabase-js";
+
+const supabaseAdmin = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!);
+
+const logRun = async (selectedModel: string, imageCount: number, finalCount: Record<string, { totalImages: number, accuracy: number }>, elapsed: number) => {
+  const { error } = await supabaseAdmin
+    .from('runs')
+    .insert({ 
+      selected_model: selectedModel,
+      total_images: imageCount, 
+      classes_count: finalCount,
+      elapsed: elapsed,
+      type: "cmdline",
+      rate: imageCount / elapsed
+    });
+  
+  if (error) {
+    console.error('Error logging run:', error);
+  }
+};
 
 export const generateScript = (
   unsortedFiles: FileInfo[], 
@@ -132,6 +152,5 @@ export const generateScript = (
     }
     const elapsed = parseFloat(status.message); // assuming status.message is the elapsed time in string format
 
-    // Call logFinal
-    // logFinal(selectedModel, imageCount, finalCount, elapsed);
+    logRun(selectedModel, imageCount, finalCount, elapsed);
   };
