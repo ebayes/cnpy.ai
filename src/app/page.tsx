@@ -1178,9 +1178,9 @@ export default function Home() {
           className="flex flex-grow px-5 overflow-auto"
         > 
         {files.length === 0 ? (
-          <div className="w-full h-full flex items-center justify-center">
-  <div id="upload" className="flex justify-center items-center">
-    <div
+          <div className="w-full min-h-full flex items-center justify-center">
+  
+    <div id="gallery empty"
       className="flex justify-center items-center rounded-lg px-6 py-4 text-center border-dotted border-2 border-gray-300"
     >
       <Stack align="center" justify="center" h={100} w={180}>
@@ -1190,7 +1190,7 @@ export default function Home() {
         <Text fz="sm" ta="center">Gallery empty. Click <Text span inherit fw={500} className='text-[#3E63DD]'>upload </Text>to add a new dataset.</Text>
       </Stack>
     </div>
-  </div> 
+ 
 </div>
         ) : 
           selectedClass === 'All'
